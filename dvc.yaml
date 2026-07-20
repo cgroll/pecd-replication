@@ -152,3 +152,5 @@ stages:
           cache: false
       - output/images/09_peon_zone_comparison.png:
           cache: false
+      - output/images/09_national_aggregate_comparison.png:
+          cache: false

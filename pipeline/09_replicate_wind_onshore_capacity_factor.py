@@ -164,3 +164,62 @@ plt.show()
 # :name: fig-09-peon-zone-comparison
 # Modeled vs. PECD's own PEON zone wind-onshore capacity factor, both snapshot hours.
 # ```
+
+# %% [markdown]
+# ## National (Germany-wide) aggregate
+#
+# PECD publishes no NUTS0/country-level series for wind onshore (confirmed
+# via the CDS API constraints: `technology=30`/`resource_grade_b` only ever
+# offers `spatial_resolution` `peon`/`p2on`) and never publishes absolute
+# output (MW), only capacity factor -- so there is no ready-made "PECD
+# national number" to compare against. Both sides of this comparison are
+# therefore built the same way, from the already-computed zone-level table:
+# a capacity-weighted average of the 7 PEON zones, using **our own MaStR
+# zone capacities as the weights on both sides** (`dhf.pecd.national_capacity_weighted_cf`'s
+# pattern in ~/research/delu-headline-forecast). Using identical weights on
+# both sides isolates "how good are the modeled capacity factors" from "how
+# good is the capacity weighting" -- only the CF values differ between the
+# two.
+#
+# This is Germany-only, not DE-LU: both PECD's PEON zones and MaStR exclude
+# Luxembourg. Only matters if this is later compared against a DE-LU-labeled
+# series (e.g. SMARD), not for this PECD-vs-our-model comparison.
+
+# %%
+def capacity_weighted_mean(group: pd.DataFrame, value_col: str) -> float:
+    return (group[value_col] * group["capacity_mw"]).sum() / group["capacity_mw"].sum()
+
+
+national_rows = []
+for ts, group in zone_detail.groupby("timestamp"):
+    national_rows.append({
+        "timestamp": ts,
+        "our_national_cf": capacity_weighted_mean(group, "modeled_cf"),
+        "pecd_implied_national_cf": capacity_weighted_mean(group, "pecd_cf"),
+        "total_capacity_mw": group["capacity_mw"].sum(),
+    })
+national = pd.DataFrame(national_rows)
+national["diff"] = national["our_national_cf"] - national["pecd_implied_national_cf"]
+national["rel_diff_pct"] = national["diff"] / national["pecd_implied_national_cf"] * 100
+national
+
+# %%
+fig, ax = plt.subplots(figsize=(7, 5))
+width = 0.35
+x = np.arange(len(national))
+ax.bar(x - width / 2, national["pecd_implied_national_cf"], width, label="PECD-implied national CF")
+ax.bar(x + width / 2, national["our_national_cf"], width, label="Our modeled national CF")
+ax.set_xticks(x)
+ax.set_xticklabels([f"{ts:%Y-%m-%d %H:%M}" for ts in national["timestamp"]])
+ax.set_ylabel("Germany-wide onshore wind capacity factor")
+ax.set_title("National aggregate: our model vs. PECD-zone-implied")
+ax.legend()
+fig.tight_layout()
+fig.savefig(paths.images_path / "09_national_aggregate_comparison.png", dpi=150, bbox_inches="tight")
+plt.show()
+
+# %% [markdown]
+# ```{figure} ../../output/images/09_national_aggregate_comparison.png
+# :name: fig-09-national-aggregate-comparison
+# Germany-wide onshore wind capacity factor: our modeled aggregate vs. PECD-zone-implied aggregate, both using the same MaStR capacity weights.
+# ```

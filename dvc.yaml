@@ -36,6 +36,33 @@ stages:
       - data/downloads/era5/era5_wind_snapshots.nc:
           persist: true
 
+  download_pecd_masks:
+    cmd: uv run python pipeline/06_download_pecd_masks.py
+    deps:
+      - pipeline/06_download_pecd_masks.py
+    outs:
+      - data/downloads/pecd/peon_region_mask.zip:
+          persist: true
+
+  download_pecd_peon_capacity_factor:
+    cmd: uv run python pipeline/07_download_pecd_peon_capacity_factor.py
+    deps:
+      - pipeline/07_download_pecd_peon_capacity_factor.py
+      - pecdr/domain.py
+    outs:
+      - data/downloads/pecd/pecd_peon_capacity_factor_2020.zip:
+          persist: true
+
+  build_wind_onshore_plant_panel:
+    cmd: uv run python pipeline/08_build_wind_onshore_plant_panel.py
+    deps:
+      - pipeline/08_build_wind_onshore_plant_panel.py
+      - pecdr/grid.py
+      - pecdr/peon_zones.py
+      - data/downloads/pecd/peon_region_mask.zip
+    outs:
+      - data/processed/wind_onshore_plant_panel.parquet
+
   replicate_wind_bias_correction:
     cmd: >-
       MPLBACKEND=Agg uv run jupytext --to notebook --execute
@@ -66,4 +93,62 @@ stages:
       - output/images/04_bias_correction_100m_20200115T0000.png:
           cache: false
       - output/images/04_bias_correction_100m_20200615T1200.png:
+          cache: false
+
+  extrapolate_wind_to_hub_height:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/05_extrapolate_wind_to_hub_height.ipynb
+      pipeline/05_extrapolate_wind_to_hub_height.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/05_extrapolate_wind_to_hub_height.ipynb
+    deps:
+      - pipeline/05_extrapolate_wind_to_hub_height.py
+      - pecdr/hub_height.py
+      - pecdr/wind_bias.py
+      - pecdr/pecd_io.py
+      - pecdr/domain.py
+      - data/downloads/pecd/climatology_era5_10m.zip
+      - data/downloads/pecd/climatology_era5_100m.zip
+      - data/downloads/pecd/climatology_gwa2_10m.zip
+      - data/downloads/pecd/climatology_gwa2_100m.zip
+      - data/downloads/pecd/power_law_coefficient.zip
+      - data/downloads/era5/era5_wind_snapshots.nc
+    outs:
+      - book/notebooks/05_extrapolate_wind_to_hub_height.ipynb:
+          cache: false
+      - output/images/05_alpha_consistency_20200115T0000.png:
+          cache: false
+      - output/images/05_alpha_consistency_20200615T1200.png:
+          cache: false
+      - output/images/05_hub_height_profile.png:
+          cache: false
+
+  replicate_wind_onshore_capacity_factor:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
+      pipeline/09_replicate_wind_onshore_capacity_factor.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
+    deps:
+      - pipeline/09_replicate_wind_onshore_capacity_factor.py
+      - pecdr/hub_height.py
+      - pecdr/power_curve.py
+      - pecdr/shutdown.py
+      - pecdr/wind_bias.py
+      - pecdr/pecd_io.py
+      - pecdr/domain.py
+      - data/processed/wind_onshore_plant_panel.parquet
+      - data/downloads/pecd/climatology_era5_100m.zip
+      - data/downloads/pecd/climatology_gwa2_100m.zip
+      - data/downloads/pecd/power_law_coefficient.zip
+      - data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      - data/downloads/era5/era5_wind_snapshots.nc
+    outs:
+      - book/notebooks/09_replicate_wind_onshore_capacity_factor.ipynb:
+          cache: false
+      - output/images/09_peon_zone_comparison.png:
           cache: false

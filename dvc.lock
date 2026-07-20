@@ -149,8 +149,8 @@ stages:
       size: 1100
     - path: pecdr/pecd_io.py
       hash: md5
-      md5: 34a1febd6529c926c945e66afd583996
-      size: 2492
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
     - path: pecdr/wind_bias.py
       hash: md5
       md5: 0871c55e04d9d30510f94b1eb9fb9f14
@@ -162,7 +162,7 @@ stages:
     outs:
     - path: book/notebooks/04_replicate_wind_bias_correction.ipynb
       hash: md5
-      md5: 49559fec02e457d14fc930837344f506
+      md5: 1d541a9e7c27854f2629dae4f952dd89
       size: 13669
     - path: output/images/04_bias_correction_100m_20200115T0000.png
       hash: md5
@@ -180,3 +180,192 @@ stages:
       hash: md5
       md5: 98d375ba19ee74bf826f4841d3e94646
       size: 134010
+  extrapolate_wind_to_hub_height:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/05_extrapolate_wind_to_hub_height.ipynb 
+      pipeline/05_extrapolate_wind_to_hub_height.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/05_extrapolate_wind_to_hub_height.ipynb
+    deps:
+    - path: data/downloads/era5/era5_wind_snapshots.nc
+      hash: md5
+      md5: e4fc3ef09ae73a0217e552183f095777
+      size: 98738
+    - path: data/downloads/pecd/climatology_era5_100m.zip
+      hash: md5
+      md5: 00fe35455e52c9fb719626deed072fe5
+      size: 13435
+    - path: data/downloads/pecd/climatology_era5_10m.zip
+      hash: md5
+      md5: cf8ed88fd2ce70f09cf5140475985afd
+      size: 15481
+    - path: data/downloads/pecd/climatology_gwa2_100m.zip
+      hash: md5
+      md5: 2b7c0d311b70d237fc20bd92f9119bd4
+      size: 15403
+    - path: data/downloads/pecd/climatology_gwa2_10m.zip
+      hash: md5
+      md5: 3b6c9a686c9a54ab51eeccf5af27c103
+      size: 15352
+    - path: data/downloads/pecd/power_law_coefficient.zip
+      hash: md5
+      md5: 273138d2210da18aa6ed0cd11c96454a
+      size: 31829471
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 7190950635ac7ff0fd696adc4b5b3fcc
+      size: 1100
+    - path: pecdr/hub_height.py
+      hash: md5
+      md5: d92123205b6c78e5127aff0b21fd5fcc
+      size: 2542
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pecdr/wind_bias.py
+      hash: md5
+      md5: 0871c55e04d9d30510f94b1eb9fb9f14
+      size: 3715
+    - path: pipeline/05_extrapolate_wind_to_hub_height.py
+      hash: md5
+      md5: 15b7aace22b94e5ee9d664c9e6bea28b
+      size: 5610
+    outs:
+    - path: book/notebooks/05_extrapolate_wind_to_hub_height.ipynb
+      hash: md5
+      md5: d6fba2c02a1cb4e72edb68efaff997bb
+      size: 11573
+    - path: output/images/05_alpha_consistency_20200115T0000.png
+      hash: md5
+      md5: d66c3972bfdfde39a1be5c7d9983c5d0
+      size: 135643
+    - path: output/images/05_alpha_consistency_20200615T1200.png
+      hash: md5
+      md5: bd7bdc014e0a4e8b01fb8f1adf84387a
+      size: 131100
+    - path: output/images/05_hub_height_profile.png
+      hash: md5
+      md5: 7487b489ed4ec667c5b874845476abd2
+      size: 59456
+  download_pecd_masks:
+    cmd: uv run python pipeline/06_download_pecd_masks.py
+    deps:
+    - path: pipeline/06_download_pecd_masks.py
+      hash: md5
+      md5: 881c3fc120b24f1d31f0b1dc28cf9569
+      size: 1470
+    outs:
+    - path: data/downloads/pecd/peon_region_mask.zip
+      hash: md5
+      md5: 409e246d63be52cda6443af3121a5543
+      size: 85527869
+  download_pecd_peon_capacity_factor:
+    cmd: uv run python pipeline/07_download_pecd_peon_capacity_factor.py
+    deps:
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 7190950635ac7ff0fd696adc4b5b3fcc
+      size: 1100
+    - path: pipeline/07_download_pecd_peon_capacity_factor.py
+      hash: md5
+      md5: 8729f8cfa0b2af6880a2a8c7fe862b79
+      size: 1986
+    outs:
+    - path: data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      hash: md5
+      md5: 9fee96f894d0d24bb7b28df3b76a540a
+      size: 2681804
+  build_wind_onshore_plant_panel:
+    cmd: uv run python pipeline/08_build_wind_onshore_plant_panel.py
+    deps:
+    - path: data/downloads/pecd/peon_region_mask.zip
+      hash: md5
+      md5: 409e246d63be52cda6443af3121a5543
+      size: 85527869
+    - path: pecdr/grid.py
+      hash: md5
+      md5: dba5aa98b94cdd51f5148c3d60059f50
+      size: 729
+    - path: pecdr/peon_zones.py
+      hash: md5
+      md5: ad2b36468490f1022015bdae28d916a9
+      size: 3305
+    - path: pipeline/08_build_wind_onshore_plant_panel.py
+      hash: md5
+      md5: a38c82d2a9b7be6728483b961cd289f7
+      size: 2622
+    outs:
+    - path: data/processed/wind_onshore_plant_panel.parquet
+      hash: md5
+      md5: 516edb35ff257c3ce5c52b4f8cd6ed2a
+      size: 959852
+  replicate_wind_onshore_capacity_factor:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output 
+      book/notebooks/09_replicate_wind_onshore_capacity_factor.ipynb 
+      pipeline/09_replicate_wind_onshore_capacity_factor.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
+    deps:
+    - path: data/downloads/era5/era5_wind_snapshots.nc
+      hash: md5
+      md5: e4fc3ef09ae73a0217e552183f095777
+      size: 98738
+    - path: data/downloads/pecd/climatology_era5_100m.zip
+      hash: md5
+      md5: 00fe35455e52c9fb719626deed072fe5
+      size: 13435
+    - path: data/downloads/pecd/climatology_gwa2_100m.zip
+      hash: md5
+      md5: 2b7c0d311b70d237fc20bd92f9119bd4
+      size: 15403
+    - path: data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      hash: md5
+      md5: 9fee96f894d0d24bb7b28df3b76a540a
+      size: 2681804
+    - path: data/downloads/pecd/power_law_coefficient.zip
+      hash: md5
+      md5: 273138d2210da18aa6ed0cd11c96454a
+      size: 31829471
+    - path: data/processed/wind_onshore_plant_panel.parquet
+      hash: md5
+      md5: 516edb35ff257c3ce5c52b4f8cd6ed2a
+      size: 959852
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 7190950635ac7ff0fd696adc4b5b3fcc
+      size: 1100
+    - path: pecdr/hub_height.py
+      hash: md5
+      md5: d92123205b6c78e5127aff0b21fd5fcc
+      size: 2542
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pecdr/power_curve.py
+      hash: md5
+      md5: 2d763f9056c2bd467200b23d6f71df69
+      size: 5966
+    - path: pecdr/shutdown.py
+      hash: md5
+      md5: c5e32e1cbdb12fe70c02b1ca8550adc2
+      size: 1978
+    - path: pecdr/wind_bias.py
+      hash: md5
+      md5: 0871c55e04d9d30510f94b1eb9fb9f14
+      size: 3715
+    - path: pipeline/09_replicate_wind_onshore_capacity_factor.py
+      hash: md5
+      md5: d3b409aa5d6ba3341650499f19a2e68c
+      size: 7003
+    outs:
+    - path: book/notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
+      hash: md5
+      md5: 88933dea2060dd0ecb6a7ef3ed5092ac
+      size: 19060
+    - path: output/images/09_peon_zone_comparison.png
+      hash: md5
+      md5: a8c20ba0d1d8fb5e158f6747878c6f5b
+      size: 95725

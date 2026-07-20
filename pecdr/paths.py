@@ -77,18 +77,52 @@ class ProjPaths:
         return self.output_path / "reports"
 
     # ------------------------------------------------------------------ #
-    # Example data files — replace with project-specific paths            #
+    # PECD v4.2 wind bias-correction reference grids (static, no year/month) #
     # ------------------------------------------------------------------ #
 
     @property
-    def example_raw_file(self) -> Path:
-        """Raw example dataset (parquet)."""
-        return self.downloads_path / "example_data.parquet"
+    def pecd_downloads_path(self) -> Path:
+        """PECD v4.2 downloads directory."""
+        return self.downloads_path / "pecd"
+
+    def wind_bias_reference_zip(self, name: str) -> Path:
+        """One static wind bias-correction reference grid, downloaded individually.
+
+        `name` is one of: "climatology_era5_10m", "climatology_era5_100m",
+        "climatology_gwa2_10m", "climatology_gwa2_100m", "power_law_coefficient".
+        One CDS request per variable (rather than one combined request) --
+        empirically, combining all 5 into a single request left the CDS job
+        queued with no response for 20+ minutes (vs. ~3-8 min per variable
+        individually), so pipeline/01_download_pecd_wind_bias_reference.py
+        downloads them one at a time. See pipeline/01_download_pecd_wind_bias_reference.py.
+        """
+        return self.pecd_downloads_path / f"{name}.zip"
+
+    def pecd_wind_speed_zip(self, height_m: int, year: str) -> Path:
+        """PECD's own bias-corrected gridded wind speed (ground truth), one file per height/year.
+
+        One request per height, same reasoning as `wind_bias_reference_zip`
+        -- see pipeline/02_download_pecd_wind_speed_snapshots.py.
+        """
+        return self.pecd_downloads_path / f"pecd_{height_m}m_wind_speed_{year}.zip"
+
+    # ------------------------------------------------------------------ #
+    # Raw ERA5 downloads                                                   #
+    # ------------------------------------------------------------------ #
 
     @property
-    def example_processed_file(self) -> Path:
-        """Processed example dataset (parquet)."""
-        return self.processed_data_path / "example_processed.parquet"
+    def era5_downloads_path(self) -> Path:
+        """Raw ERA5 downloads directory."""
+        return self.downloads_path / "era5"
+
+    @property
+    def era5_wind_snapshots_file(self) -> Path:
+        """Raw (not bias-corrected) ERA5 10m/100m u/v wind components for the chosen snapshot hours.
+
+        See pipeline/03_download_era5_wind_snapshots.py and pecdr/domain.py
+        for the exact timestamps.
+        """
+        return self.era5_downloads_path / "era5_wind_snapshots.nc"
 
     # ------------------------------------------------------------------ #
     # Helpers                                                              #
@@ -101,6 +135,8 @@ class ProjPaths:
             self.processed_data_path,
             self.images_path,
             self.reports_path,
+            self.pecd_downloads_path,
+            self.era5_downloads_path,
         ]
         for d in dirs:
             d.mkdir(parents=True, exist_ok=True)

@@ -40,3 +40,143 @@ stages:
       hash: md5
       md5: 8e7046ced1ffd391bdfced90bf04fd34
       size: 179776
+  download_pecd_wind_bias_reference:
+    cmd: uv run python pipeline/01_download_pecd_wind_bias_reference.py
+    deps:
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 7190950635ac7ff0fd696adc4b5b3fcc
+      size: 1100
+    - path: pipeline/01_download_pecd_wind_bias_reference.py
+      hash: md5
+      md5: f23122ddf11ae93a951944b257f8f902
+      size: 2836
+    outs:
+    - path: data/downloads/pecd/climatology_era5_100m.zip
+      hash: md5
+      md5: 00fe35455e52c9fb719626deed072fe5
+      size: 13435
+    - path: data/downloads/pecd/climatology_era5_10m.zip
+      hash: md5
+      md5: cf8ed88fd2ce70f09cf5140475985afd
+      size: 15481
+    - path: data/downloads/pecd/climatology_gwa2_100m.zip
+      hash: md5
+      md5: 2b7c0d311b70d237fc20bd92f9119bd4
+      size: 15403
+    - path: data/downloads/pecd/climatology_gwa2_10m.zip
+      hash: md5
+      md5: 3b6c9a686c9a54ab51eeccf5af27c103
+      size: 15352
+    - path: data/downloads/pecd/power_law_coefficient.zip
+      hash: md5
+      md5: 273138d2210da18aa6ed0cd11c96454a
+      size: 31829471
+  download_pecd_wind_speed_snapshots:
+    cmd: uv run python pipeline/02_download_pecd_wind_speed_snapshots.py
+    deps:
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 7190950635ac7ff0fd696adc4b5b3fcc
+      size: 1100
+    - path: pipeline/02_download_pecd_wind_speed_snapshots.py
+      hash: md5
+      md5: c5f14ed60ff3c1d477ac120c1f9c90b2
+      size: 2286
+    outs:
+    - path: data/downloads/pecd/pecd_100m_wind_speed_2020.zip
+      hash: md5
+      md5: 224f2fb94de4bebd5f6f9c1c039027b4
+      size: 16391342
+    - path: data/downloads/pecd/pecd_10m_wind_speed_2020.zip
+      hash: md5
+      md5: bd37a262ac3436bc3d410b3d03acb5f9
+      size: 16516098
+  download_era5_wind_snapshots:
+    cmd: uv run python pipeline/03_download_era5_wind_snapshots.py
+    deps:
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 7190950635ac7ff0fd696adc4b5b3fcc
+      size: 1100
+    - path: pipeline/03_download_era5_wind_snapshots.py
+      hash: md5
+      md5: 3e7c338ac7e8bb1355b9966da73d562c
+      size: 2542
+    outs:
+    - path: data/downloads/era5/era5_wind_snapshots.nc
+      hash: md5
+      md5: e4fc3ef09ae73a0217e552183f095777
+      size: 98738
+  replicate_wind_bias_correction:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/04_replicate_wind_bias_correction.ipynb 
+      pipeline/04_replicate_wind_bias_correction.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/04_replicate_wind_bias_correction.ipynb
+    deps:
+    - path: data/downloads/era5/era5_wind_snapshots.nc
+      hash: md5
+      md5: e4fc3ef09ae73a0217e552183f095777
+      size: 98738
+    - path: data/downloads/pecd/climatology_era5_100m.zip
+      hash: md5
+      md5: 00fe35455e52c9fb719626deed072fe5
+      size: 13435
+    - path: data/downloads/pecd/climatology_era5_10m.zip
+      hash: md5
+      md5: cf8ed88fd2ce70f09cf5140475985afd
+      size: 15481
+    - path: data/downloads/pecd/climatology_gwa2_100m.zip
+      hash: md5
+      md5: 2b7c0d311b70d237fc20bd92f9119bd4
+      size: 15403
+    - path: data/downloads/pecd/climatology_gwa2_10m.zip
+      hash: md5
+      md5: 3b6c9a686c9a54ab51eeccf5af27c103
+      size: 15352
+    - path: data/downloads/pecd/pecd_100m_wind_speed_2020.zip
+      hash: md5
+      md5: 224f2fb94de4bebd5f6f9c1c039027b4
+      size: 16391342
+    - path: data/downloads/pecd/pecd_10m_wind_speed_2020.zip
+      hash: md5
+      md5: bd37a262ac3436bc3d410b3d03acb5f9
+      size: 16516098
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 7190950635ac7ff0fd696adc4b5b3fcc
+      size: 1100
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: 34a1febd6529c926c945e66afd583996
+      size: 2492
+    - path: pecdr/wind_bias.py
+      hash: md5
+      md5: 0871c55e04d9d30510f94b1eb9fb9f14
+      size: 3715
+    - path: pipeline/04_replicate_wind_bias_correction.py
+      hash: md5
+      md5: 07d454bf270a26c3c66b20f6b965f282
+      size: 6496
+    outs:
+    - path: book/notebooks/04_replicate_wind_bias_correction.ipynb
+      hash: md5
+      md5: 49559fec02e457d14fc930837344f506
+      size: 13669
+    - path: output/images/04_bias_correction_100m_20200115T0000.png
+      hash: md5
+      md5: c1c0714cc6fa2d9d4f6d1a4bd11427ce
+      size: 144697
+    - path: output/images/04_bias_correction_100m_20200615T1200.png
+      hash: md5
+      md5: 39f7029976f6ca51658b4612f37a0435
+      size: 134716
+    - path: output/images/04_bias_correction_10m_20200115T0000.png
+      hash: md5
+      md5: 74c8fb7651a56c40f411bd76499e81cd
+      size: 135538
+    - path: output/images/04_bias_correction_10m_20200615T1200.png
+      hash: md5
+      md5: 98d375ba19ee74bf826f4841d3e94646
+      size: 134010

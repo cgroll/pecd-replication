@@ -12,9 +12,9 @@ project:
   github: cgroll/pecd-replication
   toc:
     - file: markdown/index.md
-    - title: Analysis
+    - title: Wind bias-correction replication
       children:
-        - file: notebooks/02_analyse_example.ipynb
+        - file: notebooks/04_replicate_wind_bias_correction.ipynb
 site:
   options:
     folders: true

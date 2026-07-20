@@ -1,27 +1,69 @@
 stages:
-  download_example:
-    cmd: uv run python pipeline/01_download_example.py
+  download_pecd_wind_bias_reference:
+    cmd: uv run python pipeline/01_download_pecd_wind_bias_reference.py
     deps:
-      - pipeline/01_download_example.py
+      - pipeline/01_download_pecd_wind_bias_reference.py
+      - pecdr/domain.py
     outs:
-      - data/downloads/example_data.parquet:
+      - data/downloads/pecd/climatology_era5_10m.zip:
+          persist: true
+      - data/downloads/pecd/climatology_era5_100m.zip:
+          persist: true
+      - data/downloads/pecd/climatology_gwa2_10m.zip:
+          persist: true
+      - data/downloads/pecd/climatology_gwa2_100m.zip:
+          persist: true
+      - data/downloads/pecd/power_law_coefficient.zip:
           persist: true
 
-  process_example:
+  download_pecd_wind_speed_snapshots:
+    cmd: uv run python pipeline/02_download_pecd_wind_speed_snapshots.py
+    deps:
+      - pipeline/02_download_pecd_wind_speed_snapshots.py
+      - pecdr/domain.py
+    outs:
+      - data/downloads/pecd/pecd_10m_wind_speed_2020.zip:
+          persist: true
+      - data/downloads/pecd/pecd_100m_wind_speed_2020.zip:
+          persist: true
+
+  download_era5_wind_snapshots:
+    cmd: uv run python pipeline/03_download_era5_wind_snapshots.py
+    deps:
+      - pipeline/03_download_era5_wind_snapshots.py
+      - pecdr/domain.py
+    outs:
+      - data/downloads/era5/era5_wind_snapshots.nc:
+          persist: true
+
+  replicate_wind_bias_correction:
     cmd: >-
       MPLBACKEND=Agg uv run jupytext --to notebook --execute
       --set-kernel python3
-      --output book/notebooks/02_analyse_example.ipynb
-      pipeline/02_analyse_example.py &&
+      --output book/notebooks/04_replicate_wind_bias_correction.ipynb
+      pipeline/04_replicate_wind_bias_correction.py &&
       uv run python pipeline/_strip_jupytext_metadata.py
-      book/notebooks/02_analyse_example.ipynb
+      book/notebooks/04_replicate_wind_bias_correction.ipynb
     deps:
-      - pipeline/02_analyse_example.py
-      - data/downloads/example_data.parquet
+      - pipeline/04_replicate_wind_bias_correction.py
+      - pecdr/wind_bias.py
+      - pecdr/pecd_io.py
+      - pecdr/domain.py
+      - data/downloads/pecd/climatology_era5_10m.zip
+      - data/downloads/pecd/climatology_era5_100m.zip
+      - data/downloads/pecd/climatology_gwa2_10m.zip
+      - data/downloads/pecd/climatology_gwa2_100m.zip
+      - data/downloads/pecd/pecd_10m_wind_speed_2020.zip
+      - data/downloads/pecd/pecd_100m_wind_speed_2020.zip
+      - data/downloads/era5/era5_wind_snapshots.nc
     outs:
-      - book/notebooks/02_analyse_example.ipynb:
+      - book/notebooks/04_replicate_wind_bias_correction.ipynb:
           cache: false
-      - output/images/02_daily_average.png:
+      - output/images/04_bias_correction_10m_20200115T0000.png:
           cache: false
-      - output/images/02_category_dist.png:
+      - output/images/04_bias_correction_10m_20200615T1200.png:
+          cache: false
+      - output/images/04_bias_correction_100m_20200115T0000.png:
+          cache: false
+      - output/images/04_bias_correction_100m_20200615T1200.png:
           cache: false

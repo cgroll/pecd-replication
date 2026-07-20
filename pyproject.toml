@@ -17,6 +17,9 @@ dependencies = [
     "numpy>=1.26.0",
     "pandas>=2.2.0",
     "pyarrow>=17.0.0",
+    "cdsapi>=0.7.0",
+    "xarray>=2024.7.0",
+    "netcdf4>=1.7.0",
 ]
 
 [build-system]

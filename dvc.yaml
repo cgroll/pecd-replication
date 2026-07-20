@@ -94,6 +94,14 @@ stages:
           cache: false
       - output/images/04_bias_correction_100m_20200615T1200.png:
           cache: false
+      - output/images/04_raw_vs_corrected_10m_20200115T0000.png:
+          cache: false
+      - output/images/04_raw_vs_corrected_10m_20200615T1200.png:
+          cache: false
+      - output/images/04_raw_vs_corrected_100m_20200115T0000.png:
+          cache: false
+      - output/images/04_raw_vs_corrected_100m_20200615T1200.png:
+          cache: false
 
   extrapolate_wind_to_hub_height:
     cmd: >-

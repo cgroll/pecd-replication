@@ -157,13 +157,13 @@ stages:
       size: 3715
     - path: pipeline/04_replicate_wind_bias_correction.py
       hash: md5
-      md5: 07d454bf270a26c3c66b20f6b965f282
-      size: 6496
+      md5: 1d01370154fcb4f74afe2e22de6d4e38
+      size: 8680
     outs:
     - path: book/notebooks/04_replicate_wind_bias_correction.ipynb
       hash: md5
-      md5: 1d541a9e7c27854f2629dae4f952dd89
-      size: 13669
+      md5: 5528ca766f010bb22dca046d56d05825
+      size: 17675
     - path: output/images/04_bias_correction_100m_20200115T0000.png
       hash: md5
       md5: c1c0714cc6fa2d9d4f6d1a4bd11427ce
@@ -180,6 +180,22 @@ stages:
       hash: md5
       md5: 98d375ba19ee74bf826f4841d3e94646
       size: 134010
+    - path: output/images/04_raw_vs_corrected_100m_20200115T0000.png
+      hash: md5
+      md5: 75671393c11bf6cb8eeb041c52e077ae
+      size: 116692
+    - path: output/images/04_raw_vs_corrected_100m_20200615T1200.png
+      hash: md5
+      md5: e3bc1cb19c6d6c3e3bf510f9301a7c47
+      size: 114565
+    - path: output/images/04_raw_vs_corrected_10m_20200115T0000.png
+      hash: md5
+      md5: 071a405b094fa08afde80503f0ea536b
+      size: 120175
+    - path: output/images/04_raw_vs_corrected_10m_20200615T1200.png
+      hash: md5
+      md5: 3daec2ecbd43ed19a743dce33587b6b6
+      size: 114319
   extrapolate_wind_to_hub_height:
     cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
       python3 --output book/notebooks/05_extrapolate_wind_to_hub_height.ipynb 

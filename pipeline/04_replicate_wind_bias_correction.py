@@ -89,6 +89,49 @@ for height_m, d in per_height.items():
     print(f"  {height_m}m: mean={float(delta.mean()):.3f}, min={float(delta.min()):.3f}, max={float(delta.max()):.3f}")
 
 # %% [markdown]
+# ## Raw ERA5 vs. bias-corrected: what does the correction actually do?
+#
+# Each panel: raw (uncorrected) ERA5, our bias-corrected replication, and
+# the correction itself (corrected minus raw) -- shows the Delta Adjustment
+# step in isolation, before checking it against PECD's ground truth below.
+
+# %%
+for height_m, d in per_height.items():
+    raw_full = raw_wind_speed(raw_era5[f"u{height_m}"], raw_era5[f"v{height_m}"])
+    raw_full.attrs.update(long_name=f"{height_m} metre wind speed (raw ERA5)", units="m s**-1")
+    for ts in snapshot_times:
+        raw = raw_full.sel(valid_time=ts, method="nearest")
+        own = d["own_corrected"].sel(valid_time=ts, method="nearest")
+        raw, own = restrict_to_onshore(raw, own, reference=own)
+        correction = own - raw
+        correction.attrs.update(long_name=f"{height_m} metre wind speed correction", units="m s**-1")
+
+        fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+        shared_kwargs = dict(cmap="viridis", vmin=float(min(raw.min(), own.min())), vmax=float(max(raw.max(), own.max())))
+        raw.plot(ax=axes[0], **shared_kwargs)
+        axes[0].set_title(f"Raw ERA5 ({height_m}m)")
+        own.plot(ax=axes[1], **shared_kwargs)
+        axes[1].set_title(f"Our bias-corrected ({height_m}m)")
+        correction.plot(ax=axes[2], cmap="RdBu_r", center=0)
+        axes[2].set_title(f"Correction (corrected - raw)\nmean={float(correction.mean()):+.2f} m/s")
+        fig.suptitle(f"{ts:%Y-%m-%d %H:%M} UTC, {height_m}m wind speed: effect of the Delta Adjustment")
+        fig.tight_layout()
+        fname = f"04_raw_vs_corrected_{height_m}m_{ts:%Y%m%dT%H%M}.png"
+        fig.savefig(paths.images_path / fname, dpi=150, bbox_inches="tight")
+        plt.show()
+
+# %% [markdown]
+# ```{figure} ../../output/images/04_raw_vs_corrected_10m_20200115T0000.png
+# :name: fig-04-raw-vs-corrected-10m-jan
+# 10m wind speed: raw ERA5 vs. our bias-corrected replication, 2020-01-15 00:00 UTC.
+# ```
+#
+# ```{figure} ../../output/images/04_raw_vs_corrected_100m_20200615T1200.png
+# :name: fig-04-raw-vs-corrected-100m-jun
+# 100m wind speed: raw ERA5 vs. our bias-corrected replication, 2020-06-15 12:00 UTC.
+# ```
+
+# %% [markdown]
 # ## Compare against PECD's own bias-corrected grid, per snapshot hour
 #
 # Each panel: our replicated correction, PECD's published correction, and

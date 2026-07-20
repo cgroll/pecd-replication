@@ -358,13 +358,13 @@ stages:
       size: 3715
     - path: pipeline/09_replicate_wind_onshore_capacity_factor.py
       hash: md5
-      md5: ac5c3b68aef490d7d02ce1495ea436a0
-      size: 9784
+      md5: d4bc25d9b212aa2911d24dde71778542
+      size: 8427
     outs:
     - path: book/notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
       hash: md5
-      md5: cc2b31a3e730f18351c4aec7586e5871
-      size: 25658
+      md5: d036d4d6f7e5cb6ad511d1fd90027716
+      size: 23889
     - path: output/images/09_national_aggregate_comparison.png
       hash: md5
       md5: c2b68fe34d83aad5e73386f47603a286
@@ -373,3 +373,79 @@ stages:
       hash: md5
       md5: a8c20ba0d1d8fb5e158f6747878c6f5b
       size: 95725
+  compute_wind_onshore_full_year:
+    cmd: uv run python pipeline/10_compute_wind_onshore_full_year.py
+    deps:
+    - path: data/downloads/pecd/climatology_era5_100m.zip
+      hash: md5
+      md5: 00fe35455e52c9fb719626deed072fe5
+      size: 13435
+    - path: data/downloads/pecd/climatology_gwa2_100m.zip
+      hash: md5
+      md5: 2b7c0d311b70d237fc20bd92f9119bd4
+      size: 15403
+    - path: data/downloads/pecd/power_law_coefficient.zip
+      hash: md5
+      md5: 273138d2210da18aa6ed0cd11c96454a
+      size: 31829471
+    - path: data/processed/wind_onshore_plant_panel.parquet
+      hash: md5
+      md5: 516edb35ff257c3ce5c52b4f8cd6ed2a
+      size: 959852
+    - path: pecdr/full_year.py
+      hash: md5
+      md5: 835e935c1d76e4d14b126ee5a28560ac
+      size: 4706
+    - path: pecdr/plant_model.py
+      hash: md5
+      md5: 8e265e4938ef2ac74b5d485a88c6b480
+      size: 2152
+    - path: pipeline/10_compute_wind_onshore_full_year.py
+      hash: md5
+      md5: 66768002511821dc42ae61f56938e801
+      size: 2602
+    outs:
+    - path: data/processed/wind_onshore_full_year_2020_cf.parquet
+      hash: md5
+      md5: b2b234aba700ecdbeb06c13b183ca89a
+      size: 770515
+  analyse_wind_onshore_full_year:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/11_analyse_wind_onshore_full_year.ipynb 
+      pipeline/11_analyse_wind_onshore_full_year.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/11_analyse_wind_onshore_full_year.ipynb
+    deps:
+    - path: data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      hash: md5
+      md5: 9fee96f894d0d24bb7b28df3b76a540a
+      size: 2681804
+    - path: data/processed/wind_onshore_full_year_2020_cf.parquet
+      hash: md5
+      md5: b2b234aba700ecdbeb06c13b183ca89a
+      size: 770515
+    - path: data/processed/wind_onshore_plant_panel.parquet
+      hash: md5
+      md5: 516edb35ff257c3ce5c52b4f8cd6ed2a
+      size: 959852
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pipeline/11_analyse_wind_onshore_full_year.py
+      hash: md5
+      md5: b2b44d687228db9ac5cef7d2a955d7ea
+      size: 5034
+    outs:
+    - path: book/notebooks/11_analyse_wind_onshore_full_year.ipynb
+      hash: md5
+      md5: adba4e4fee039a0d52b0c026aefc289d
+      size: 13542
+    - path: output/images/11_bias_vs_cf_level.png
+      hash: md5
+      md5: 11baa25c6222055abd720fcedc070a4e
+      size: 134147
+    - path: output/images/11_full_year_timeseries.png
+      hash: md5
+      md5: 96baef5c9ac87a145e2e8ccc22d594cb
+      size: 376853

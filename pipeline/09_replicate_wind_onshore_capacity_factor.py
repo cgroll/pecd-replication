@@ -34,16 +34,8 @@ from pecdr.domain import SNAPSHOT_TIMESTAMPS, SNAPSHOT_YEAR
 from pecdr.hub_height import alpha_for_timestamp, extrapolate_to_hub_height
 from pecdr.paths import ProjPaths
 from pecdr.pecd_io import load_region_timeseries_zip, open_single_zipped_netcdf
-from pecdr.power_curve import (
-    OTHER_LOSSES_FRACTION,
-    capacity_factor_from_library_curve,
-    generic_capacity_factor,
-    library_cf_curve,
-    library_turbines,
-    match_turbine_type,
-    rated_wind_speed_from_specific_power,
-    specific_power_w_m2,
-)
+from pecdr.plant_model import load_plants_with_curves, plant_capacity_factor
+from pecdr.power_curve import OTHER_LOSSES_FRACTION
 from pecdr.shutdown import apply_shutdown_derate
 from pecdr.wind_bias import apply_delta_correction, delta_correction, raw_wind_speed
 
@@ -55,32 +47,10 @@ snapshot_times = pd.to_datetime(SNAPSHOT_TIMESTAMPS)
 # ## Load the plant panel and build each plant's power curve
 
 # %%
-plants = pd.read_parquet(paths.wind_onshore_plant_panel_file)
-plants = plants.dropna(subset=["hub_height_m", "rotor_diameter_m"]).reset_index(drop=True)
+plants, curve_cache = load_plants_with_curves(paths)
 print(f"Plants with complete technical detail: {len(plants):,} ({plants['capacity_mw'].sum():,.0f} MW)")
-
-library = library_turbines()
-plants["matched_type"] = plants["turbine_model"].apply(lambda m: match_turbine_type(m, library))
 match_rate = plants.loc[plants["matched_type"].notna(), "capacity_mw"].sum() / plants["capacity_mw"].sum()
 print(f"Capacity-weighted OEDB match rate: {match_rate * 100:.1f}%")
-
-plants["specific_power_w_m2"] = specific_power_w_m2(plants["capacity_mw"] * 1000, plants["rotor_diameter_m"])
-plants["rated_wind_speed_ms"] = rated_wind_speed_from_specific_power(plants["specific_power_w_m2"])
-
-curve_cache = {t: library_cf_curve(t) for t in plants["matched_type"].dropna().unique()}
-
-
-def plant_capacity_factor(wind_speed_at_hub: np.ndarray, row_matched_type: pd.Series, row_rated_ws: pd.Series) -> np.ndarray:
-    """Per-plant capacity factor at `wind_speed_at_hub`, matched curve where available."""
-    cf = np.empty(len(wind_speed_at_hub))
-    is_matched = row_matched_type.notna().to_numpy()
-    for t in row_matched_type[is_matched].unique():
-        idx = (row_matched_type == t).to_numpy()
-        ws, curve_cf = curve_cache[t]
-        cf[idx] = capacity_factor_from_library_curve(wind_speed_at_hub[idx], ws, curve_cf)
-    if (~is_matched).any():
-        cf[~is_matched] = generic_capacity_factor(wind_speed_at_hub[~is_matched], row_rated_ws[~is_matched].to_numpy())
-    return cf
 
 # %% [markdown]
 # ## Per-plant wind speed at hub height, per snapshot hour
@@ -109,7 +79,7 @@ for ts in snapshot_times:
     alpha_at_plant = alpha.sel(latitude=plant_lat, longitude=plant_lon, method="nearest").to_numpy()
     v_hub = v100_at_plant * (plant_hub_height / 100) ** alpha_at_plant
 
-    cf = plant_capacity_factor(v_hub, plants["matched_type"], plants["rated_wind_speed_ms"])
+    cf = plant_capacity_factor(v_hub, plants["matched_type"], plants["rated_wind_speed_ms"], curve_cache)
     cf = apply_shutdown_derate(cf, v_hub)
     cf = cf * (1 - OTHER_LOSSES_FRACTION)
 

@@ -175,9 +175,35 @@ class ProjPaths:
         """
         return self.mastr_project_path / "data" / "downloads" / "mastr_units_raw" / "wind_technical_detail.parquet"
 
+    @property
+    def delu_project_path(self) -> Path:
+        """Root of ~/research/delu-headline-forecast, read directly for its
+        already-downloaded ERA5 archive (same "consume a sibling project's
+        data directly" convention as `mastr_project_path`) -- avoids a
+        redundant multi-GB CDS download for periods that project already has.
+        """
+        return Path.home() / "research" / "delu-headline-forecast"
+
+    def delu_era5_month_file(self, year: int, month: int) -> Path:
+        """One month of hourly ERA5 (100m/10m u/v wind, 2m temp, solar radiation),
+        56-47N x 3-15E, 0.25 degree -- from
+        ~/research/delu-headline-forecast/pipeline/23_download_era5_full_period.py.
+        Covers 2018-10 through (at least) 2026-03.
+        """
+        return self.delu_project_path / "data" / "downloads" / "era5" / f"era5_{year:04d}-{month:02d}.nc"
+
     # ------------------------------------------------------------------ #
     # Processed data files                                                 #
     # ------------------------------------------------------------------ #
+
+    @property
+    def wind_onshore_full_year_cf_file(self) -> Path:
+        """Hourly modeled PEON zone + national capacity factor for all of 2020.
+
+        One row per hour, columns DE01-DE07 + `national`. See
+        pipeline/10_compute_wind_onshore_full_year.py.
+        """
+        return self.processed_data_path / "wind_onshore_full_year_2020_cf.parquet"
 
     @property
     def wind_onshore_plant_panel_file(self) -> Path:

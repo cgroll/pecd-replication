@@ -17,6 +17,7 @@ project:
         - file: notebooks/04_replicate_wind_bias_correction.ipynb
         - file: notebooks/05_extrapolate_wind_to_hub_height.ipynb
         - file: notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
+        - file: notebooks/11_analyse_wind_onshore_full_year.ipynb
 site:
   options:
     folders: true

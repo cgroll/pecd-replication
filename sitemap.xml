@@ -5,6 +5,18 @@
     <loc>http://localhost:3000</loc>
   </url>
   <url>
-    <loc>http://localhost:3000/notebooks/analyse-example</loc>
+    <loc>http://localhost:3000/notebooks/replicate-wind-bias-correction</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/extrapolate-wind-to-hub-height</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/replicate-wind-onshore-capacity-factor</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/analyse-wind-onshore-full-year</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/compare-all-approaches</loc>
   </url>
 </urlset>

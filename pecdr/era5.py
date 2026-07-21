@@ -137,3 +137,75 @@ def download_era5_months_via_cds(months: list[str], output_files: dict[str, Path
             shutil.move(tmp_file, output_file)
             size_mb = output_file.stat().st_size / 1e6
             print(f"{month}: saved -> {output_file} ({size_mb:.1f} MB)", flush=True)
+
+
+def mask_weighted_regional_mean(data: xr.DataArray, mask: xr.DataArray) -> pd.DataFrame:
+    """Area-fraction-weighted regional mean of a (time, latitude, longitude) grid.
+
+    `mask` is a PECD region mask (dims (region, latitude, longitude), values
+    the 0..1 area-coverage fraction per cell), already restricted to the
+    desired `region` values (e.g. Germany's PEON/PEOF zones). Its grid is
+    float64 and covers all of Europe; `data`'s grid is float32 and only the
+    small bbox this project downloads -- `method="nearest"` snaps the mask
+    onto `data`'s exact grid points (same underlying 0.25 degree grid, so
+    this is an exact match, not a real interpolation) rather than requiring
+    dtype-identical coordinates.
+
+    Returns a wide DataFrame: hourly index, one column per region.
+    """
+    mask_aligned = mask.sel(latitude=data.latitude, longitude=data.longitude, method="nearest")
+    weighted_sum = (data * mask_aligned).sum(dim=["latitude", "longitude"])
+    weight_total = mask_aligned.sum(dim=["latitude", "longitude"])
+    result = (weighted_sum / weight_total).transpose("time", "region")
+    return result.to_pandas()
+
+
+def grid_cell_capacity_weighted_features(
+    cf_grid: xr.DataArray, capacity_by_cell_month: pd.DataFrame, prefix: str
+) -> pd.DataFrame:
+    """National capacity-weighted wind features, weighted directly by each
+    grid cell's own installed capacity -- no PEON/PEOF zone step at all,
+    unlike `mask_weighted_regional_mean` (which first area-weights per-cell
+    CF up to a zone, then capacity-weights zones up to a national number --
+    both steps implicitly treat capacity as uniform within a zone). A cell
+    with turbines pulls the national number toward its own weather; an
+    empty cell contributes nothing, even inside what used to be the same
+    zone.
+
+    `capacity_by_cell_month` has columns `grid_lat`, `grid_lon`, `month`,
+    `capacity_mw` -- see
+    ~/research/mastr-power-capacities-germany's
+    pipeline/09_build_wind_grid_cell_panel.py (each MaStR unit snapped to
+    its single nearest ERA5/PECD grid cell). Returns the same
+    `{prefix}_effective_cf` / `{prefix}_capacity_mw` column pair as
+    `pecdr.capacity_weighting`'s national-level helpers.
+    """
+    hourly_index = pd.DatetimeIndex(cf_grid["time"].values)
+
+    monthly_capacity = (
+        capacity_by_cell_month.assign(year_month=lambda d: d["month"].dt.to_period("M"))
+        .groupby(["year_month", "grid_lat", "grid_lon"])["capacity_mw"]
+        .sum()
+        .unstack(["grid_lat", "grid_lon"])
+    )
+    hourly_capacity = monthly_capacity.reindex(hourly_index.to_period("M")).fillna(0.0)
+    hourly_capacity.index = hourly_index
+
+    # Vectorized (pointwise, not outer-product) selection: both indexers
+    # share the "cell" dimension, so this pulls exactly one CF value per
+    # (grid_lat[i], grid_lon[i]) pair rather than the full cross product.
+    # method="nearest" for the same float32 (ERA5) vs. float64 (MaStR grid,
+    # derived from the PECD mask) dtype mismatch handled elsewhere -- same
+    # underlying 0.25 degree grid either way.
+    cell_lats = xr.DataArray(hourly_capacity.columns.get_level_values("grid_lat").to_numpy(), dims="cell")
+    cell_lons = xr.DataArray(hourly_capacity.columns.get_level_values("grid_lon").to_numpy(), dims="cell")
+    cf_at_cells = cf_grid.sel(latitude=cell_lats, longitude=cell_lons, method="nearest").transpose("time", "cell").values
+
+    capacity = hourly_capacity.to_numpy()
+    weighted_sum = (cf_at_cells * capacity).sum(axis=1)
+    weight_total = capacity.sum(axis=1)
+
+    return pd.DataFrame(
+        {f"{prefix}_effective_cf": weighted_sum / weight_total, f"{prefix}_capacity_mw": weight_total},
+        index=hourly_index,
+    )

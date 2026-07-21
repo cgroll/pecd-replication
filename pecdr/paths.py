@@ -235,6 +235,43 @@ class ProjPaths:
         return self.pecd_downloads_path / f"pecd_temperature_{file_version}.zip"
 
     @property
+    def own_wind_onshore_capacity_factors_file(self) -> Path:
+        """This project's own physics-based (raw ERA5, no bias correction, one
+        generic turbine curve) wind-onshore capacity factor, by PEON zone,
+        hourly, full backtest period ("approach 2" -- see
+        pipeline/12_compare_all_approaches.py). See
+        pipeline/20_process_era5_capacity_factors.py.
+        """
+        return self.processed_data_path / "own_wind_onshore_capacity_factors.parquet"
+
+    @property
+    def own_wind_offshore_capacity_factors_file(self) -> Path:
+        """Same as `own_wind_onshore_capacity_factors_file`, by PEOF zone."""
+        return self.processed_data_path / "own_wind_offshore_capacity_factors.parquet"
+
+    @property
+    def own_solar_capacity_factors_file(self) -> Path:
+        """Same as `own_wind_onshore_capacity_factors_file`, solar by NUTS2 zone
+        (only the NUTS2 regions PECD's own solar product also covers).
+        """
+        return self.processed_data_path / "own_solar_capacity_factors.parquet"
+
+    @property
+    def own_wind_onshore_gridweighted_features_file(self) -> Path:
+        """Grid-cell-capacity-weighted national wind-onshore features (effective_cf,
+        capacity_mw) -- a refinement of `own_wind_onshore_capacity_factors_file`
+        that skips the PEON zone step entirely, weighting straight from each
+        grid cell's own MaStR installed capacity. See
+        pipeline/21_process_wind_grid_capacity_weighted.py.
+        """
+        return self.processed_data_path / "own_wind_onshore_gridweighted_features.parquet"
+
+    @property
+    def own_wind_offshore_gridweighted_features_file(self) -> Path:
+        """Same as `own_wind_onshore_gridweighted_features_file`, for offshore wind."""
+        return self.processed_data_path / "own_wind_offshore_gridweighted_features.parquet"
+
+    @property
     def pecd_temperature_file(self) -> Path:
         """PECD 2m temperature, Germany-only, hourly, 2015-2025 (single "DE" column, deg C).
 
@@ -298,6 +335,21 @@ class ProjPaths:
         ~/research/mastr-power-capacities-germany/pipeline/07_build_wind_zone_panel.py.
         """
         return self.mastr_project_path / "data" / "processed" / "capacity_by_peon_month.parquet"
+
+    @property
+    def mastr_capacity_by_wind_onshore_grid_month_file(self) -> Path:
+        """Monthly onshore wind capacity by 0.25-degree ERA5/PECD grid cell x month --
+        each MaStR unit assigned to its single nearest grid cell, no PEON zone
+        involved. Columns: grid_lat, grid_lon, month, capacity_mw, unit_count,
+        series. See
+        ~/research/mastr-power-capacities-germany/pipeline/09_build_wind_grid_cell_panel.py.
+        """
+        return self.mastr_project_path / "data" / "processed" / "capacity_by_wind_onshore_grid_month.parquet"
+
+    @property
+    def mastr_capacity_by_wind_offshore_grid_month_file(self) -> Path:
+        """Same as `mastr_capacity_by_wind_onshore_grid_month_file`, for offshore wind."""
+        return self.mastr_project_path / "data" / "processed" / "capacity_by_wind_offshore_grid_month.parquet"
 
     @property
     def delu_project_path(self) -> Path:

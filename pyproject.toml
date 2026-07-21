@@ -21,6 +21,7 @@ dependencies = [
     "xarray>=2024.7.0",
     "netcdf4>=1.7.0",
     "windpowerlib>=0.2.2",
+    "pvlib>=0.15.2",
 ]
 
 [build-system]

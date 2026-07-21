@@ -47,3 +47,15 @@ def capacity_weighted_cf(capacity_factor: pd.DataFrame, capacity_by_zone_month: 
 def total_hourly_capacity(capacity_by_zone_month: pd.DataFrame, target_index: pd.DatetimeIndex, zone_col: str = "region_code") -> pd.Series:
     """Total installed capacity (MW), hourly, summed across all zones in the panel."""
     return hourly_capacity_by_zone(capacity_by_zone_month, target_index, zone_col).sum(axis=1)
+
+
+def average_across_technologies(capacity_factor: pd.DataFrame) -> pd.DataFrame:
+    """Collapse a (technology, region) MultiIndex-column solar CF frame to one CF per region.
+
+    Simple unweighted mean across PECD's 4 solar technology sub-types --
+    there's no MaStR capacity split by technology (only by behind-the-meter
+    category) to weight them by, so this is the "approach 1" simplification
+    (see pipeline/12_compare_all_approaches.py). Migrated from
+    ~/research/delu-headline-forecast's `dhf.pecd.average_across_technologies`.
+    """
+    return capacity_factor.T.groupby(level="region").mean().T

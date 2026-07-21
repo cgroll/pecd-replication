@@ -499,8 +499,8 @@ stages:
       size: 770515
     - path: pecdr/capacity_weighting.py
       hash: md5
-      md5: c337ca3528d8290e288154436c1781d1
-      size: 2410
+      md5: 5b63ea98b3dded423316094c89118994
+      size: 3025
     - path: pecdr/pecd_io.py
       hash: md5
       md5: d319205cf33c103ce7e73bf426174d5a
@@ -512,7 +512,7 @@ stages:
     outs:
     - path: book/notebooks/12_compare_all_approaches.ipynb
       hash: md5
-      md5: 4afe30f2f8d1b1c9dd5a1122bd0653c5
+      md5: f6742182fca4d52fe6fbc9b2048396a7
       size: 16548
     - path: output/images/12_all_approaches_timeseries.png
       hash: md5
@@ -698,3 +698,93 @@ stages:
       hash: md5
       md5: c53a0275914a16ef01be5e3ea462c620
       size: 1796064
+  process_era5_capacity_factors:
+    cmd: uv run python pipeline/20_process_era5_capacity_factors.py
+    deps:
+    - path: data/downloads/era5
+      hash: md5
+      md5: b0707430bfbb6d4bd3a372156317563a.dir
+      size: 1383681994
+      nfiles: 91
+    - path: data/downloads/pecd/nuts_2_region_mask.zip
+      hash: md5
+      md5: f3fae7f46578aeebca4a1f34bf1ed103
+      size: 505690
+    - path: data/downloads/pecd/peof_region_mask.zip
+      hash: md5
+      md5: 120ebb12bcbe52d452a22735b7f617a4
+      size: 81690
+    - path: data/downloads/pecd/peon_region_mask.zip
+      hash: md5
+      md5: 409e246d63be52cda6443af3121a5543
+      size: 85527869
+    - path: data/processed/pecd_solar_capacity_factors.parquet
+      hash: md5
+      md5: fc99cff58e67559e171fa3d0d0f736e5
+      size: 51558552
+    - path: pecdr/era5.py
+      hash: md5
+      md5: ffa79d2122af6f798271055b31f0f9be
+      size: 9151
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pecdr/physics.py
+      hash: md5
+      md5: c5d1f3893912843eaf3414c8bd75636a
+      size: 5396
+    - path: pecdr/wind_bias.py
+      hash: md5
+      md5: 0871c55e04d9d30510f94b1eb9fb9f14
+      size: 3715
+    - path: pipeline/20_process_era5_capacity_factors.py
+      hash: md5
+      md5: ccdc49d15917aa32e876e77cba7d9bae
+      size: 4322
+    outs:
+    - path: data/processed/own_solar_capacity_factors.parquet
+      hash: md5
+      md5: 728b87eb3e43ff5324a44eaab72e9154
+      size: 14395077
+    - path: data/processed/own_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: 73d7b4aa4a2db95cd368d9bd24ebd111
+      size: 2595317
+    - path: data/processed/own_wind_onshore_capacity_factors.parquet
+      hash: md5
+      md5: 53efa55c0132a642a9ea132150e132ed
+      size: 5148093
+  process_wind_grid_capacity_weighted:
+    cmd: uv run python pipeline/21_process_wind_grid_capacity_weighted.py
+    deps:
+    - path: data/downloads/era5
+      hash: md5
+      md5: b0707430bfbb6d4bd3a372156317563a.dir
+      size: 1383681994
+      nfiles: 91
+    - path: pecdr/era5.py
+      hash: md5
+      md5: ffa79d2122af6f798271055b31f0f9be
+      size: 9151
+    - path: pecdr/physics.py
+      hash: md5
+      md5: c5d1f3893912843eaf3414c8bd75636a
+      size: 5396
+    - path: pecdr/wind_bias.py
+      hash: md5
+      md5: 0871c55e04d9d30510f94b1eb9fb9f14
+      size: 3715
+    - path: pipeline/21_process_wind_grid_capacity_weighted.py
+      hash: md5
+      md5: 500d4f652e1817107e5d608849db9eba
+      size: 3189
+    outs:
+    - path: data/processed/own_wind_offshore_gridweighted_features.parquet
+      hash: md5
+      md5: 0c23b76095fd327c7e9c01dc82775ff9
+      size: 1220848
+    - path: data/processed/own_wind_onshore_gridweighted_features.parquet
+      hash: md5
+      md5: 17b561dd09ee3affd7c268d6a77e8825
+      size: 1263296

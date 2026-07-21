@@ -305,3 +305,33 @@ stages:
           cache: false
       - output/images/12_approaches_vs_smard.png:
           cache: false
+
+  process_era5_capacity_factors:
+    cmd: uv run python pipeline/20_process_era5_capacity_factors.py
+    deps:
+      - pipeline/20_process_era5_capacity_factors.py
+      - pecdr/era5.py
+      - pecdr/physics.py
+      - pecdr/wind_bias.py
+      - pecdr/pecd_io.py
+      - data/downloads/era5
+      - data/downloads/pecd/peon_region_mask.zip
+      - data/downloads/pecd/peof_region_mask.zip
+      - data/downloads/pecd/nuts_2_region_mask.zip
+      - data/processed/pecd_solar_capacity_factors.parquet
+    outs:
+      - data/processed/own_wind_onshore_capacity_factors.parquet
+      - data/processed/own_wind_offshore_capacity_factors.parquet
+      - data/processed/own_solar_capacity_factors.parquet
+
+  process_wind_grid_capacity_weighted:
+    cmd: uv run python pipeline/21_process_wind_grid_capacity_weighted.py
+    deps:
+      - pipeline/21_process_wind_grid_capacity_weighted.py
+      - pecdr/era5.py
+      - pecdr/physics.py
+      - pecdr/wind_bias.py
+      - data/downloads/era5
+    outs:
+      - data/processed/own_wind_onshore_gridweighted_features.parquet
+      - data/processed/own_wind_offshore_gridweighted_features.parquet

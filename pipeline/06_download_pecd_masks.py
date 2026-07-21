@@ -1,18 +1,19 @@
-"""Download PECD v4.2's PEON (pan-European onshore wind zone) region mask.
+"""Download PECD v4.2's PEON (onshore wind), PEOF (offshore wind), and NUTS2
+region masks.
 
-Pure data acquisition -- no charts. Needed to assign each MaStR wind unit to
-its PEON zone (DE01-DE07 for Germany) by nearest grid cell + dominant zone
-fraction, so per-plant power output can be aggregated to zone level and
-compared against pipeline/07's PEON capacity-factor ground truth.
+Pure data acquisition -- no charts. PEON is needed to assign each MaStR wind
+unit to its zone (DE01-DE07) for the onshore replication (pipeline/07-09).
+PEOF and NUTS2 are needed for the offshore-wind and solar replication phases
+respectively (migrated scope, matching
+~/research/delu-headline-forecast's pipeline/08+21_download_pecd_*mask*.py).
 
-Same file / request as ~/research/mastr-power-capacities-germany's
+Same file / request pattern as ~/research/mastr-power-capacities-germany's
 pipeline/06_download_pecd_masks.py -- downloaded again here (rather than
 reading that project's copy directly) so this project stays runnable
 standalone, per the template's per-project self-containment convention.
 
-No `area` restriction: unlike the gridded wind-speed downloads, this mask is
-needed at full European extent so a MaStR unit near the domain edge still
-has a matching mask cell to snap to.
+No `area` restriction: these masks are needed at full European extent so a
+unit near the domain edge still has a matching mask cell to snap to.
 
 Requires a ~/.cdsapirc file with a valid CDS API key.
 """
@@ -25,16 +26,24 @@ from pecdr.paths import ProjPaths
 paths = ProjPaths()
 paths.ensure_directories()
 
-output_file = paths.peon_mask_zip
-if output_file.exists():
-    print(f"Already downloaded -> {output_file}")
-else:
+MASKS = {
+    "peon": paths.peon_mask_zip,
+    "peof": paths.peof_mask_zip,
+    "nuts_2": paths.nuts2_mask_zip,
+}
+
+client = cdsapi.Client()
+
+for variable, output_file in MASKS.items():
+    if output_file.exists():
+        print(f"'{variable}': already downloaded -> {output_file}")
+        continue
+
     request = {
         "pecd_version": "pecd4_2",
         "file_version": "fv1",
-        "variable": "peon_region_mask",
+        "variable": f"{variable}_region_mask",
     }
-    print(f"Requesting 'peon_region_mask' -> {output_file}")
-    client = cdsapi.Client()
+    print(f"Requesting '{variable}_region_mask' -> {output_file}")
     retrieve_with_retries(client, "sis-energy-pecd", request, str(output_file))
     print("Done")

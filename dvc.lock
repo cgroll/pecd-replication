@@ -269,9 +269,17 @@ stages:
     deps:
     - path: pipeline/06_download_pecd_masks.py
       hash: md5
-      md5: 881c3fc120b24f1d31f0b1dc28cf9569
-      size: 1470
+      md5: cc35cc54d68b0cac2b6bef29078a2071
+      size: 1674
     outs:
+    - path: data/downloads/pecd/nuts_2_region_mask.zip
+      hash: md5
+      md5: f3fae7f46578aeebca4a1f34bf1ed103
+      size: 505690
+    - path: data/downloads/pecd/peof_region_mask.zip
+      hash: md5
+      md5: 120ebb12bcbe52d452a22735b7f617a4
+      size: 81690
     - path: data/downloads/pecd/peon_region_mask.zip
       hash: md5
       md5: 409e246d63be52cda6443af3121a5543
@@ -570,3 +578,123 @@ stages:
       hash: md5
       md5: 103b2a6e367e505737794c1e0fe10aa5
       size: 1967734
+  download_pecd_capacity_factors:
+    cmd: uv run python pipeline/16_download_pecd_capacity_factors.py
+    deps:
+    - path: pipeline/16_download_pecd_capacity_factors.py
+      hash: md5
+      md5: ff2b697f5a08b5ef162840c14b8e0f6a
+      size: 2869
+    outs:
+    - path: data/downloads/pecd/capacity_factors/solar_tech60.zip
+      hash: md5
+      md5: a26b69f367177a09cdcfc4ab6aa8e761
+      size: 91424532
+    - path: data/downloads/pecd/capacity_factors/solar_tech61.zip
+      hash: md5
+      md5: 948fabd0258962fb8e127d65cca85e99
+      size: 91884151
+    - path: data/downloads/pecd/capacity_factors/solar_tech62.zip
+      hash: md5
+      md5: e9c7087708d465f8ee6f935911153f5b
+      size: 92283744
+    - path: data/downloads/pecd/capacity_factors/solar_tech63.zip
+      hash: md5
+      md5: 29116eae6faaaa1537a990c2a10b0807
+      size: 92643407
+    - path: data/downloads/pecd/capacity_factors/wind_offshore_tech20.zip
+      hash: md5
+      md5: 322a8814863c9b2ff0ca56df17fa8deb
+      size: 11694866
+    - path: data/downloads/pecd/capacity_factors/wind_onshore_tech30.zip
+      hash: md5
+      md5: 569dcddb85d28d46544d9fc7235458dc
+      size: 29414601
+  process_pecd_capacity_factors:
+    cmd: uv run python pipeline/17_process_pecd_capacity_factors.py
+    deps:
+    - path: data/downloads/pecd/capacity_factors/solar_tech60.zip
+      hash: md5
+      md5: a26b69f367177a09cdcfc4ab6aa8e761
+      size: 91424532
+    - path: data/downloads/pecd/capacity_factors/solar_tech61.zip
+      hash: md5
+      md5: 948fabd0258962fb8e127d65cca85e99
+      size: 91884151
+    - path: data/downloads/pecd/capacity_factors/solar_tech62.zip
+      hash: md5
+      md5: e9c7087708d465f8ee6f935911153f5b
+      size: 92283744
+    - path: data/downloads/pecd/capacity_factors/solar_tech63.zip
+      hash: md5
+      md5: 29116eae6faaaa1537a990c2a10b0807
+      size: 92643407
+    - path: data/downloads/pecd/capacity_factors/wind_offshore_tech20.zip
+      hash: md5
+      md5: 322a8814863c9b2ff0ca56df17fa8deb
+      size: 11694866
+    - path: data/downloads/pecd/capacity_factors/wind_onshore_tech30.zip
+      hash: md5
+      md5: 569dcddb85d28d46544d9fc7235458dc
+      size: 29414601
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pipeline/17_process_pecd_capacity_factors.py
+      hash: md5
+      md5: f6813e792c07c56f2947fe0e072fc9a2
+      size: 2489
+    outs:
+    - path: data/processed/pecd_solar_capacity_factors.parquet
+      hash: md5
+      md5: fc99cff58e67559e171fa3d0d0f736e5
+      size: 51558552
+    - path: data/processed/pecd_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: fc0302a6df4558f45f41a11788b71060
+      size: 2929080
+    - path: data/processed/pecd_wind_onshore_capacity_factors.parquet
+      hash: md5
+      md5: 0284b97259860845add1711ae124e113
+      size: 2296648
+  download_pecd_temperature:
+    cmd: uv run python pipeline/18_download_pecd_temperature.py
+    deps:
+    - path: pipeline/18_download_pecd_temperature.py
+      hash: md5
+      md5: 71e3ccfa7eff546523a8afaf874da056
+      size: 1938
+    outs:
+    - path: data/downloads/pecd/pecd_temperature_fv1.zip
+      hash: md5
+      md5: be3c882d0837f7856d3f3a6beae620dd
+      size: 7202676
+    - path: data/downloads/pecd/pecd_temperature_fv2.zip
+      hash: md5
+      md5: dbe252798f54b99418a1ecdfb5034654
+      size: 17769362
+  process_pecd_temperature:
+    cmd: uv run python pipeline/19_process_pecd_temperature.py
+    deps:
+    - path: data/downloads/pecd/pecd_temperature_fv1.zip
+      hash: md5
+      md5: be3c882d0837f7856d3f3a6beae620dd
+      size: 7202676
+    - path: data/downloads/pecd/pecd_temperature_fv2.zip
+      hash: md5
+      md5: dbe252798f54b99418a1ecdfb5034654
+      size: 17769362
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pipeline/19_process_pecd_temperature.py
+      hash: md5
+      md5: 252f5e066e510d7c95340d3ff28918a6
+      size: 1327
+    outs:
+    - path: data/processed/pecd_temperature_de.parquet
+      hash: md5
+      md5: c53a0275914a16ef01be5e3ea462c620
+      size: 1796064

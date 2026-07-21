@@ -154,6 +154,26 @@ class ProjPaths:
         """
         return self.pecd_downloads_path / "peon_region_mask.zip"
 
+    @property
+    def peof_mask_zip(self) -> Path:
+        """PECD v4.2 PEOF (pan-European offshore wind zone) region mask, full domain.
+
+        Germany intersects 6 PEOF zones (5 North Sea sub-zones + 1
+        Baltic-wide zone). See `peon_mask_zip` for the shared structure and
+        pipeline/06_download_pecd_masks.py.
+        """
+        return self.pecd_downloads_path / "peof_region_mask.zip"
+
+    @property
+    def nuts2_mask_zip(self) -> Path:
+        """PECD v4.2 NUTS2 region mask, full domain.
+
+        Needed to aggregate solar capacity factor (PECD's solar product is
+        published at NUTS2, unlike wind's PEON/PEOF-only resolution). See
+        pipeline/06_download_pecd_masks.py.
+        """
+        return self.pecd_downloads_path / "nuts_2_region_mask.zip"
+
     def pecd_peon_capacity_factor_zip(self, year: str) -> Path:
         """PECD's own wind-onshore capacity factor at PEON zones (ground truth), one file per year.
 
@@ -162,6 +182,65 @@ class ProjPaths:
         pipeline/07_download_pecd_peon_capacity_factor.py.
         """
         return self.pecd_downloads_path / f"pecd_peon_capacity_factor_{year}.zip"
+
+    def pecd_capacity_factor_zip(self, kind: str, technology: str) -> Path:
+        """PECD capacity-factor download, all of Europe, multi-year, one file per
+        (kind, technology). `kind` is one of "solar", "wind_onshore",
+        "wind_offshore"; `technology` is PECD's technology code (e.g. "60" for
+        solar industrial rooftop, "30" for existing onshore wind). Broader
+        multi-year/multi-technology sibling of `pecd_peon_capacity_factor_zip`
+        (which stays as-is, already used by the validated onshore replication
+        pipeline) -- migrated from
+        ~/research/delu-headline-forecast/pipeline/10_download_pecd_capacity_factors.py.
+        See pipeline/16_download_pecd_capacity_factors.py.
+        """
+        return self.pecd_capacity_factors_downloads_path / f"{kind}_tech{technology}.zip"
+
+    @property
+    def pecd_capacity_factors_downloads_path(self) -> Path:
+        """Directory for the multi-year PECD capacity-factor downloads (see `pecd_capacity_factor_zip`)."""
+        return self.pecd_downloads_path / "capacity_factors"
+
+    @property
+    def pecd_solar_capacity_factors_file(self) -> Path:
+        """PECD solar PV capacity factor, Germany-only, hourly, 2015-2025.
+
+        MultiIndex columns (technology, region): 4 solar sub-types (60/61/62/63)
+        x ~38 DE NUTS2 regions. See pipeline/17_process_pecd_capacity_factors.py.
+        """
+        return self.processed_data_path / "pecd_solar_capacity_factors.parquet"
+
+    @property
+    def pecd_wind_onshore_capacity_factors_file(self) -> Path:
+        """PECD wind-onshore capacity factor, Germany-only, hourly, 2015-2025,
+        columns = 7 PEON zones (DE01-DE07). See
+        pipeline/17_process_pecd_capacity_factors.py.
+        """
+        return self.processed_data_path / "pecd_wind_onshore_capacity_factors.parquet"
+
+    @property
+    def pecd_wind_offshore_capacity_factors_file(self) -> Path:
+        """PECD wind-offshore capacity factor, Germany-only, hourly, 2015-2025,
+        columns = PEOF zones (DE0xx_OFF) -- codes already match MaStR's
+        `region_code` format. See pipeline/17_process_pecd_capacity_factors.py.
+        """
+        return self.processed_data_path / "pecd_wind_offshore_capacity_factors.parquet"
+
+    def pecd_temperature_zip(self, file_version: str) -> Path:
+        """PECD 2m temperature, country level (NUTS0), one file per `file_version`
+        ("fv1" -> 2022-2025, "fv2" -> 1950-2021 -- this variable/resolution combo
+        splits by file_version at that year boundary). See
+        pipeline/18_download_pecd_temperature.py.
+        """
+        return self.pecd_downloads_path / f"pecd_temperature_{file_version}.zip"
+
+    @property
+    def pecd_temperature_file(self) -> Path:
+        """PECD 2m temperature, Germany-only, hourly, 2015-2025 (single "DE" column, deg C).
+
+        See pipeline/19_process_pecd_temperature.py.
+        """
+        return self.processed_data_path / "pecd_temperature_de.parquet"
 
     @property
     def era5_wind_snapshots_file(self) -> Path:
@@ -275,6 +354,7 @@ class ProjPaths:
             self.pecd_downloads_path,
             self.era5_downloads_path,
             self.smard_downloads_path,
+            self.pecd_capacity_factors_downloads_path,
         ]
         for d in dirs:
             d.mkdir(parents=True, exist_ok=True)

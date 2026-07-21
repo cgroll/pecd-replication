@@ -18,6 +18,7 @@ project:
         - file: notebooks/05_extrapolate_wind_to_hub_height.ipynb
         - file: notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
         - file: notebooks/11_analyse_wind_onshore_full_year.ipynb
+        - file: notebooks/12_compare_all_approaches.ipynb
 site:
   options:
     folders: true

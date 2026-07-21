@@ -197,3 +197,25 @@ stages:
           cache: false
       - output/images/11_bias_vs_cf_level.png:
           cache: false
+
+  compare_all_approaches:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/12_compare_all_approaches.ipynb
+      pipeline/12_compare_all_approaches.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/12_compare_all_approaches.ipynb
+    deps:
+      - pipeline/12_compare_all_approaches.py
+      - pecdr/capacity_weighting.py
+      - pecdr/pecd_io.py
+      - data/processed/wind_onshore_full_year_2020_cf.parquet
+      - data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+    outs:
+      - book/notebooks/12_compare_all_approaches.ipynb:
+          cache: false
+      - output/images/12_all_approaches_timeseries.png:
+          cache: false
+      - output/images/12_approaches_vs_smard.png:
+          cache: false

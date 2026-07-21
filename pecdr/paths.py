@@ -176,6 +176,18 @@ class ProjPaths:
         return self.mastr_project_path / "data" / "downloads" / "mastr_units_raw" / "wind_technical_detail.parquet"
 
     @property
+    def mastr_capacity_by_peon_month_file(self) -> Path:
+        """Monthly (time-varying) onshore wind capacity by PEON zone x month, from
+        2015 on -- unlike `wind_onshore_plant_panel_file` (this project's own
+        fixed "active today" fleet snapshot), this tracks capacity growth
+        over time, needed to weight a historical actuals comparison (e.g.
+        against SMARD) fairly rather than applying today's larger fleet
+        retroactively. See
+        ~/research/mastr-power-capacities-germany/pipeline/07_build_wind_zone_panel.py.
+        """
+        return self.mastr_project_path / "data" / "processed" / "capacity_by_peon_month.parquet"
+
+    @property
     def delu_project_path(self) -> Path:
         """Root of ~/research/delu-headline-forecast, read directly for its
         already-downloaded ERA5 archive (same "consume a sibling project's
@@ -191,6 +203,24 @@ class ProjPaths:
         Covers 2018-10 through (at least) 2026-03.
         """
         return self.delu_project_path / "data" / "downloads" / "era5" / f"era5_{year:04d}-{month:02d}.nc"
+
+    @property
+    def delu_own_wind_onshore_capacity_factors_file(self) -> Path:
+        """delu's own physics-based wind-onshore capacity factor, by PEON zone,
+        hourly -- raw ERA5 (no GWA2 bias correction), one generic turbine
+        power curve for the whole fleet (no per-plant technology match). See
+        ~/research/delu-headline-forecast/dhf/physics.py and
+        pipeline/24_process_era5_capacity_factors.py.
+        """
+        return self.delu_project_path / "data" / "processed" / "own_wind_onshore_capacity_factors.parquet"
+
+    @property
+    def delu_target_panel_file(self) -> Path:
+        """SMARD actual DE-LU generation/load, hourly (columns: pv, wind_onshore,
+        wind_offshore, load; MW). See
+        ~/research/delu-headline-forecast/pipeline/02_build_target_panel.py.
+        """
+        return self.delu_project_path / "data" / "processed" / "target_panel.parquet"
 
     # ------------------------------------------------------------------ #
     # Processed data files                                                 #

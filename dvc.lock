@@ -465,3 +465,43 @@ stages:
       hash: md5
       md5: 96baef5c9ac87a145e2e8ccc22d594cb
       size: 376853
+  compare_all_approaches:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/12_compare_all_approaches.ipynb 
+      pipeline/12_compare_all_approaches.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/12_compare_all_approaches.ipynb
+    deps:
+    - path: data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      hash: md5
+      md5: 9fee96f894d0d24bb7b28df3b76a540a
+      size: 2681804
+    - path: data/processed/wind_onshore_full_year_2020_cf.parquet
+      hash: md5
+      md5: b2b234aba700ecdbeb06c13b183ca89a
+      size: 770515
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: c337ca3528d8290e288154436c1781d1
+      size: 2410
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pipeline/12_compare_all_approaches.py
+      hash: md5
+      md5: d7b2b3f84876e9d7e65dfd95725d81e7
+      size: 6342
+    outs:
+    - path: book/notebooks/12_compare_all_approaches.ipynb
+      hash: md5
+      md5: dadf79725e52f7b3a9972a9a7e1c03aa
+      size: 16553
+    - path: output/images/12_all_approaches_timeseries.png
+      hash: md5
+      md5: e660145ff8ef35c3d8b11b72ed0556d6
+      size: 576593
+    - path: output/images/12_approaches_vs_smard.png
+      hash: md5
+      md5: 864449759bf72163032a0f82dc47ec80
+      size: 376735

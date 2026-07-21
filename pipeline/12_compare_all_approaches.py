@@ -77,7 +77,7 @@ approach2 = capacity_weighted_cf(delu_own_cf, mastr_peon_month)
 approach3 = pd.read_parquet(paths.wind_onshore_full_year_cf_file)["national"]
 
 # SMARD actual generation (MW) -> implied CF via time-varying total capacity
-target_panel = pd.read_parquet(paths.delu_target_panel_file)
+target_panel = pd.read_parquet(paths.target_panel_file)
 total_capacity_hourly = total_hourly_capacity(mastr_peon_month, target_panel.index)
 smard_implied_cf = target_panel["wind_onshore"] / total_capacity_hourly
 

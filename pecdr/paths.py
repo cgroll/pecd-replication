@@ -107,6 +107,32 @@ class ProjPaths:
         return self.pecd_downloads_path / f"pecd_{height_m}m_wind_speed_{year}.zip"
 
     # ------------------------------------------------------------------ #
+    # SMARD downloads (migrated from delu-headline-forecast)               #
+    # ------------------------------------------------------------------ #
+
+    @property
+    def smard_downloads_path(self) -> Path:
+        """Raw SMARD series downloads directory."""
+        return self.downloads_path / "smard"
+
+    def smard_raw_file(self, name: str) -> Path:
+        """Raw hourly SMARD series parquet.
+
+        `name` is one of: pv, wind_onshore, wind_offshore, load.
+        """
+        return self.smard_downloads_path / f"{name}.parquet"
+
+    @property
+    def target_panel_file(self) -> Path:
+        """Combined hourly DE-LU target panel (pv, wind_onshore, wind_offshore, load columns, MW).
+
+        The series delu-headline-forecast's forecasting models predict --
+        migrated here as part of centralizing data acquisition. See
+        pipeline/14_build_target_panel.py.
+        """
+        return self.processed_data_path / "target_panel.parquet"
+
+    # ------------------------------------------------------------------ #
     # Raw ERA5 downloads                                                   #
     # ------------------------------------------------------------------ #
 
@@ -145,6 +171,13 @@ class ProjPaths:
         for the exact timestamps.
         """
         return self.era5_downloads_path / "era5_wind_snapshots.nc"
+
+    def era5_month_file(self, month: str) -> Path:
+        """One month of hourly ERA5 (100m/10m u/v wind, 2m temp, solar radiation),
+        56-47N x 3-15E, 0.25 degree. `month` is a "YYYY-MM" string. See
+        pipeline/15_download_era5_full_period.py.
+        """
+        return self.era5_downloads_path / f"era5_{month}.nc"
 
     # ------------------------------------------------------------------ #
     # External sibling projects                                            #
@@ -196,14 +229,6 @@ class ProjPaths:
         """
         return Path.home() / "research" / "delu-headline-forecast"
 
-    def delu_era5_month_file(self, year: int, month: int) -> Path:
-        """One month of hourly ERA5 (100m/10m u/v wind, 2m temp, solar radiation),
-        56-47N x 3-15E, 0.25 degree -- from
-        ~/research/delu-headline-forecast/pipeline/23_download_era5_full_period.py.
-        Covers 2018-10 through (at least) 2026-03.
-        """
-        return self.delu_project_path / "data" / "downloads" / "era5" / f"era5_{year:04d}-{month:02d}.nc"
-
     @property
     def delu_own_wind_onshore_capacity_factors_file(self) -> Path:
         """delu's own physics-based wind-onshore capacity factor, by PEON zone,
@@ -213,14 +238,6 @@ class ProjPaths:
         pipeline/24_process_era5_capacity_factors.py.
         """
         return self.delu_project_path / "data" / "processed" / "own_wind_onshore_capacity_factors.parquet"
-
-    @property
-    def delu_target_panel_file(self) -> Path:
-        """SMARD actual DE-LU generation/load, hourly (columns: pv, wind_onshore,
-        wind_offshore, load; MW). See
-        ~/research/delu-headline-forecast/pipeline/02_build_target_panel.py.
-        """
-        return self.delu_project_path / "data" / "processed" / "target_panel.parquet"
 
     # ------------------------------------------------------------------ #
     # Processed data files                                                 #
@@ -257,6 +274,7 @@ class ProjPaths:
             self.reports_path,
             self.pecd_downloads_path,
             self.era5_downloads_path,
+            self.smard_downloads_path,
         ]
         for d in dirs:
             d.mkdir(parents=True, exist_ok=True)

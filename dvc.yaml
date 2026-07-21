@@ -1,4 +1,30 @@
 stages:
+  download_smard:
+    cmd: uv run python pipeline/13_download_smard.py
+    deps:
+      - pipeline/13_download_smard.py
+      - pecdr/smard.py
+    outs:
+      - data/downloads/smard/pv.parquet:
+          persist: true
+      - data/downloads/smard/wind_onshore.parquet:
+          persist: true
+      - data/downloads/smard/wind_offshore.parquet:
+          persist: true
+      - data/downloads/smard/load.parquet:
+          persist: true
+
+  build_target_panel:
+    cmd: uv run python pipeline/14_build_target_panel.py
+    deps:
+      - pipeline/14_build_target_panel.py
+      - data/downloads/smard/pv.parquet
+      - data/downloads/smard/wind_onshore.parquet
+      - data/downloads/smard/wind_offshore.parquet
+      - data/downloads/smard/load.parquet
+    outs:
+      - data/processed/target_panel.parquet
+
   download_pecd_wind_bias_reference:
     cmd: uv run python pipeline/01_download_pecd_wind_bias_reference.py
     deps:
@@ -173,6 +199,7 @@ stages:
       - data/downloads/pecd/climatology_era5_100m.zip
       - data/downloads/pecd/climatology_gwa2_100m.zip
       - data/downloads/pecd/power_law_coefficient.zip
+      - data/downloads/era5
     outs:
       - data/processed/wind_onshore_full_year_2020_cf.parquet
 
@@ -212,6 +239,7 @@ stages:
       - pecdr/pecd_io.py
       - data/processed/wind_onshore_full_year_2020_cf.parquet
       - data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      - data/processed/target_panel.parquet
     outs:
       - book/notebooks/12_compare_all_approaches.ipynb:
           cache: false

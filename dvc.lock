@@ -392,6 +392,11 @@ stages:
   compute_wind_onshore_full_year:
     cmd: uv run python pipeline/10_compute_wind_onshore_full_year.py
     deps:
+    - path: data/downloads/era5
+      hash: md5
+      md5: b0707430bfbb6d4bd3a372156317563a.dir
+      size: 1383681994
+      nfiles: 91
     - path: data/downloads/pecd/climatology_era5_100m.zip
       hash: md5
       md5: 00fe35455e52c9fb719626deed072fe5
@@ -418,8 +423,8 @@ stages:
       size: 2152
     - path: pipeline/10_compute_wind_onshore_full_year.py
       hash: md5
-      md5: 66768002511821dc42ae61f56938e801
-      size: 2602
+      md5: 1a30a876908a02913f65c98e156d183d
+      size: 2496
     outs:
     - path: data/processed/wind_onshore_full_year_2020_cf.parquet
       hash: md5
@@ -476,6 +481,10 @@ stages:
       hash: md5
       md5: 9fee96f894d0d24bb7b28df3b76a540a
       size: 2681804
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
     - path: data/processed/wind_onshore_full_year_2020_cf.parquet
       hash: md5
       md5: b2b234aba700ecdbeb06c13b183ca89a
@@ -490,13 +499,13 @@ stages:
       size: 3958
     - path: pipeline/12_compare_all_approaches.py
       hash: md5
-      md5: d7b2b3f84876e9d7e65dfd95725d81e7
-      size: 6342
+      md5: 97b07ba270d62f0bdec39d5eb496c97b
+      size: 6337
     outs:
     - path: book/notebooks/12_compare_all_approaches.ipynb
       hash: md5
-      md5: dadf79725e52f7b3a9972a9a7e1c03aa
-      size: 16553
+      md5: 4afe30f2f8d1b1c9dd5a1122bd0653c5
+      size: 16548
     - path: output/images/12_all_approaches_timeseries.png
       hash: md5
       md5: e660145ff8ef35c3d8b11b72ed0556d6
@@ -505,3 +514,59 @@ stages:
       hash: md5
       md5: 864449759bf72163032a0f82dc47ec80
       size: 376735
+  download_smard:
+    cmd: uv run python pipeline/13_download_smard.py
+    deps:
+    - path: pecdr/smard.py
+      hash: md5
+      md5: 1217f22d67926837581380aaaa62ed79
+      size: 2798
+    - path: pipeline/13_download_smard.py
+      hash: md5
+      md5: 3bca71d3ec73af1caddac8cd2598ef07
+      size: 2411
+    outs:
+    - path: data/downloads/smard/load.parquet
+      hash: md5
+      md5: 8d3fbefc66e3302e58fa372228826f64
+      size: 987308
+    - path: data/downloads/smard/pv.parquet
+      hash: md5
+      md5: f7b79c007e4aa5447572bed02bc83d79
+      size: 971657
+    - path: data/downloads/smard/wind_offshore.parquet
+      hash: md5
+      md5: 8127113788b485feb89696bdda9e9a44
+      size: 846464
+    - path: data/downloads/smard/wind_onshore.parquet
+      hash: md5
+      md5: 064ef844f331f084422dda300148bd59
+      size: 1121670
+  build_target_panel:
+    cmd: uv run python pipeline/14_build_target_panel.py
+    deps:
+    - path: data/downloads/smard/load.parquet
+      hash: md5
+      md5: 8d3fbefc66e3302e58fa372228826f64
+      size: 987308
+    - path: data/downloads/smard/pv.parquet
+      hash: md5
+      md5: f7b79c007e4aa5447572bed02bc83d79
+      size: 971657
+    - path: data/downloads/smard/wind_offshore.parquet
+      hash: md5
+      md5: 8127113788b485feb89696bdda9e9a44
+      size: 846464
+    - path: data/downloads/smard/wind_onshore.parquet
+      hash: md5
+      md5: 064ef844f331f084422dda300148bd59
+      size: 1121670
+    - path: pipeline/14_build_target_panel.py
+      hash: md5
+      md5: 6baaef56077736ae12d9f62313aa773b
+      size: 1503
+    outs:
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734

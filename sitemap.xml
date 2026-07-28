@@ -19,4 +19,16 @@
   <url>
     <loc>http://localhost:3000/notebooks/compare-all-approaches</loc>
   </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/analyse-bias-drivers</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/bias-correct-walk-forward</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/compare-solar-approaches</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/analyse-solar-bias-drivers</loc>
+  </url>
 </urlset>

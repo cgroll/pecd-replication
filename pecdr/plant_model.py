@@ -17,13 +17,18 @@ from pecdr.power_curve import (
 )
 
 
-def load_plants_with_curves(paths: ProjPaths) -> tuple[pd.DataFrame, dict]:
-    """Load the plant panel, match each plant to a public power curve (or fall
-    back to the generic specific-power curve), and return it alongside a
-    `{matched_type: (wind_speed, capacity_factor)}` curve cache.
+def load_plants_with_curves(paths: ProjPaths, plant_panel: pd.DataFrame | None = None) -> tuple[pd.DataFrame, dict]:
+    """Match each plant to a public power curve (or fall back to the generic
+    specific-power curve), and return it alongside a `{matched_type:
+    (wind_speed, capacity_factor)}` curve cache.
+
+    `plant_panel` lets a caller pass an already-loaded (e.g. year-specific)
+    panel directly; defaults to reading today's snapshot from
+    `paths.wind_onshore_plant_panel_file`.
     """
-    plants = pd.read_parquet(paths.wind_onshore_plant_panel_file)
-    plants = plants.dropna(subset=["hub_height_m", "rotor_diameter_m"]).reset_index(drop=True)
+    if plant_panel is None:
+        plant_panel = pd.read_parquet(paths.wind_onshore_plant_panel_file)
+    plants = plant_panel.dropna(subset=["hub_height_m", "rotor_diameter_m"]).reset_index(drop=True)
 
     library = library_turbines()
     plants["matched_type"] = plants["turbine_model"].apply(lambda m: match_turbine_type(m, library))

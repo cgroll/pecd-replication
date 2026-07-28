@@ -41,21 +41,20 @@ def capacity_weighted_cf(capacity_factor: pd.DataFrame, capacity_by_zone_month: 
     capacity_hourly = hourly_capacity_by_zone(capacity_by_zone_month, capacity_factor.index, zone_col)
     common = capacity_factor.columns.intersection(capacity_hourly.columns)
     cf, cap = capacity_factor[common], capacity_hourly[common]
-    return (cf * cap).sum(axis=1) / cap.sum(axis=1)
+    # min_count=1: an hour whose month has no capacity-panel coverage at all
+    # (e.g. past the panel's last built month) must sum to NaN, not silently
+    # to 0 -- pandas' default `sum(skipna=True)` treats an all-NaN row as 0,
+    # which would otherwise turn a genuinely-missing month into a spurious
+    # 0/0 (NaN, masked by dropna -- usually harmless) or, worse, a nonzero
+    # numerator over a zero denominator (inf, not caught by dropna at all).
+    return (cf * cap).sum(axis=1, min_count=1) / cap.sum(axis=1, min_count=1)
 
 
 def total_hourly_capacity(capacity_by_zone_month: pd.DataFrame, target_index: pd.DatetimeIndex, zone_col: str = "region_code") -> pd.Series:
-    """Total installed capacity (MW), hourly, summed across all zones in the panel."""
-    return hourly_capacity_by_zone(capacity_by_zone_month, target_index, zone_col).sum(axis=1)
+    """Total installed capacity (MW), hourly, summed across all zones in the panel.
 
-
-def average_across_technologies(capacity_factor: pd.DataFrame) -> pd.DataFrame:
-    """Collapse a (technology, region) MultiIndex-column solar CF frame to one CF per region.
-
-    Simple unweighted mean across PECD's 4 solar technology sub-types --
-    there's no MaStR capacity split by technology (only by behind-the-meter
-    category) to weight them by, so this is the "approach 1" simplification
-    (see pipeline/12_compare_all_approaches.py). Migrated from
-    ~/research/delu-headline-forecast's `dhf.pecd.average_across_technologies`.
+    `min_count=1` for the same reason as `capacity_weighted_cf`: an hour
+    outside the capacity panel's covered months must come out NaN, not a
+    silent 0 (which would turn a real SMARD value into `inf` on division).
     """
-    return capacity_factor.T.groupby(level="region").mean().T
+    return hourly_capacity_by_zone(capacity_by_zone_month, target_index, zone_col).sum(axis=1, min_count=1)

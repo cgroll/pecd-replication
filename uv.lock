@@ -2195,6 +2195,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pvlib" },
     { name = "pyarrow" },
+    { name = "scipy" },
     { name = "windpowerlib" },
     { name = "xarray" },
 ]
@@ -2214,6 +2215,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2.0" },
     { name = "pvlib", specifier = ">=0.15.2" },
     { name = "pyarrow", specifier = ">=17.0.0" },
+    { name = "scipy", specifier = ">=1.18.0" },
     { name = "windpowerlib", specifier = ">=0.2.2" },
     { name = "xarray", specifier = ">=2024.7.0" },
 ]

@@ -45,8 +45,8 @@ stages:
     deps:
     - path: pecdr/domain.py
       hash: md5
-      md5: 7190950635ac7ff0fd696adc4b5b3fcc
-      size: 1100
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
     - path: pipeline/01_download_pecd_wind_bias_reference.py
       hash: md5
       md5: f23122ddf11ae93a951944b257f8f902
@@ -97,8 +97,8 @@ stages:
     deps:
     - path: pecdr/domain.py
       hash: md5
-      md5: 7190950635ac7ff0fd696adc4b5b3fcc
-      size: 1100
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
     - path: pipeline/03_download_era5_wind_snapshots.py
       hash: md5
       md5: 3e7c338ac7e8bb1355b9966da73d562c
@@ -289,8 +289,8 @@ stages:
     deps:
     - path: pecdr/domain.py
       hash: md5
-      md5: 7190950635ac7ff0fd696adc4b5b3fcc
-      size: 1100
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
     - path: pipeline/07_download_pecd_peon_capacity_factor.py
       hash: md5
       md5: 8729f8cfa0b2af6880a2a8c7fe862b79
@@ -307,6 +307,10 @@ stages:
       hash: md5
       md5: 409e246d63be52cda6443af3121a5543
       size: 85527869
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
     - path: pecdr/grid.py
       hash: md5
       md5: dba5aa98b94cdd51f5148c3d60059f50
@@ -315,15 +319,47 @@ stages:
       hash: md5
       md5: ad2b36468490f1022015bdae28d916a9
       size: 3305
+    - path: pecdr/plant_panel.py
+      hash: md5
+      md5: 8b5b9556e762e729e045474fc4d5f771
+      size: 2600
     - path: pipeline/08_build_wind_onshore_plant_panel.py
       hash: md5
-      md5: a38c82d2a9b7be6728483b961cd289f7
-      size: 2622
+      md5: 37425b6abf15257c42e5596b066f4070
+      size: 1556
     outs:
     - path: data/processed/wind_onshore_plant_panel.parquet
       hash: md5
       md5: 516edb35ff257c3ce5c52b4f8cd6ed2a
       size: 959852
+    - path: data/processed/wind_onshore_plant_panel_2019.parquet
+      hash: md5
+      md5: 7651ddaac55cf3a03cc7b7135d6cb81a
+      size: 903611
+    - path: data/processed/wind_onshore_plant_panel_2020.parquet
+      hash: md5
+      md5: 01d5db5f4384d7fbad9479d8bb88b590
+      size: 911394
+    - path: data/processed/wind_onshore_plant_panel_2021.parquet
+      hash: md5
+      md5: de167ccb9f306c203a6dd257f874484d
+      size: 918451
+    - path: data/processed/wind_onshore_plant_panel_2022.parquet
+      hash: md5
+      md5: 056aa514897ec70f96da48b5d3230b6e
+      size: 924085
+    - path: data/processed/wind_onshore_plant_panel_2023.parquet
+      hash: md5
+      md5: c09d19bbeb06d937d343861e5b30b6c1
+      size: 931677
+    - path: data/processed/wind_onshore_plant_panel_2024.parquet
+      hash: md5
+      md5: cfbfd81717552c2ef16405091cd63e05
+      size: 940928
+    - path: data/processed/wind_onshore_plant_panel_2025.parquet
+      hash: md5
+      md5: 69bd839afaaedd555773b0e144235283
+      size: 941671
   replicate_wind_onshore_capacity_factor:
     cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
       python3 --output 
@@ -417,27 +453,55 @@ stages:
       hash: md5
       md5: 273138d2210da18aa6ed0cd11c96454a
       size: 31829471
-    - path: data/processed/wind_onshore_plant_panel.parquet
+    - path: data/processed/wind_onshore_plant_panel_2019.parquet
       hash: md5
-      md5: 516edb35ff257c3ce5c52b4f8cd6ed2a
-      size: 959852
+      md5: 7651ddaac55cf3a03cc7b7135d6cb81a
+      size: 903611
+    - path: data/processed/wind_onshore_plant_panel_2020.parquet
+      hash: md5
+      md5: 01d5db5f4384d7fbad9479d8bb88b590
+      size: 911394
+    - path: data/processed/wind_onshore_plant_panel_2021.parquet
+      hash: md5
+      md5: de167ccb9f306c203a6dd257f874484d
+      size: 918451
+    - path: data/processed/wind_onshore_plant_panel_2022.parquet
+      hash: md5
+      md5: 056aa514897ec70f96da48b5d3230b6e
+      size: 924085
+    - path: data/processed/wind_onshore_plant_panel_2023.parquet
+      hash: md5
+      md5: c09d19bbeb06d937d343861e5b30b6c1
+      size: 931677
+    - path: data/processed/wind_onshore_plant_panel_2024.parquet
+      hash: md5
+      md5: cfbfd81717552c2ef16405091cd63e05
+      size: 940928
+    - path: data/processed/wind_onshore_plant_panel_2025.parquet
+      hash: md5
+      md5: 69bd839afaaedd555773b0e144235283
+      size: 941671
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
     - path: pecdr/full_year.py
       hash: md5
       md5: 835e935c1d76e4d14b126ee5a28560ac
       size: 4706
     - path: pecdr/plant_model.py
       hash: md5
-      md5: 8e265e4938ef2ac74b5d485a88c6b480
-      size: 2152
+      md5: db512831f07779eab963286aa1121c20
+      size: 2395
     - path: pipeline/10_compute_wind_onshore_full_year.py
       hash: md5
-      md5: 1a30a876908a02913f65c98e156d183d
-      size: 2496
+      md5: 12c5f28b7389119b9752b445e73ee73d
+      size: 3220
     outs:
-    - path: data/processed/wind_onshore_full_year_2020_cf.parquet
+    - path: data/processed/wind_onshore_full_year_cf.parquet
       hash: md5
-      md5: b2b234aba700ecdbeb06c13b183ca89a
-      size: 770515
+      md5: 162caf14f3bf5155fad5fcc1dbae9a5b
+      size: 3612379
   analyse_wind_onshore_full_year:
     cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
       python3 --output book/notebooks/11_analyse_wind_onshore_full_year.ipynb 
@@ -445,39 +509,63 @@ stages:
       pipeline/_strip_jupytext_metadata.py 
       book/notebooks/11_analyse_wind_onshore_full_year.ipynb
     deps:
-    - path: data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+    - path: data/processed/pecd_wind_onshore_capacity_factors.parquet
       hash: md5
-      md5: 9fee96f894d0d24bb7b28df3b76a540a
-      size: 2681804
-    - path: data/processed/wind_onshore_full_year_2020_cf.parquet
+      md5: 0284b97259860845add1711ae124e113
+      size: 2296648
+    - path: data/processed/wind_onshore_full_year_cf.parquet
       hash: md5
-      md5: b2b234aba700ecdbeb06c13b183ca89a
-      size: 770515
-    - path: data/processed/wind_onshore_plant_panel.parquet
+      md5: 162caf14f3bf5155fad5fcc1dbae9a5b
+      size: 3612379
+    - path: data/processed/wind_onshore_plant_panel_2019.parquet
       hash: md5
-      md5: 516edb35ff257c3ce5c52b4f8cd6ed2a
-      size: 959852
-    - path: pecdr/pecd_io.py
+      md5: 7651ddaac55cf3a03cc7b7135d6cb81a
+      size: 903611
+    - path: data/processed/wind_onshore_plant_panel_2020.parquet
       hash: md5
-      md5: d319205cf33c103ce7e73bf426174d5a
-      size: 3958
+      md5: 01d5db5f4384d7fbad9479d8bb88b590
+      size: 911394
+    - path: data/processed/wind_onshore_plant_panel_2021.parquet
+      hash: md5
+      md5: de167ccb9f306c203a6dd257f874484d
+      size: 918451
+    - path: data/processed/wind_onshore_plant_panel_2022.parquet
+      hash: md5
+      md5: 056aa514897ec70f96da48b5d3230b6e
+      size: 924085
+    - path: data/processed/wind_onshore_plant_panel_2023.parquet
+      hash: md5
+      md5: c09d19bbeb06d937d343861e5b30b6c1
+      size: 931677
+    - path: data/processed/wind_onshore_plant_panel_2024.parquet
+      hash: md5
+      md5: cfbfd81717552c2ef16405091cd63e05
+      size: 940928
+    - path: data/processed/wind_onshore_plant_panel_2025.parquet
+      hash: md5
+      md5: 69bd839afaaedd555773b0e144235283
+      size: 941671
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
     - path: pipeline/11_analyse_wind_onshore_full_year.py
       hash: md5
-      md5: b2b44d687228db9ac5cef7d2a955d7ea
-      size: 5034
+      md5: 1a349ec83c0736602c40be1e916cb7ad
+      size: 5963
     outs:
     - path: book/notebooks/11_analyse_wind_onshore_full_year.ipynb
       hash: md5
-      md5: adba4e4fee039a0d52b0c026aefc289d
-      size: 13542
+      md5: 4464afd18f2865f84d563500257df363
+      size: 18193
     - path: output/images/11_bias_vs_cf_level.png
       hash: md5
-      md5: 11baa25c6222055abd720fcedc070a4e
-      size: 134147
+      md5: ba052e75c5b07d550b6d32462beeeb32
+      size: 144281
     - path: output/images/11_full_year_timeseries.png
       hash: md5
-      md5: 96baef5c9ac87a145e2e8ccc22d594cb
-      size: 376853
+      md5: 7885e3e730b16778a518054d15d0a8a4
+      size: 390445
   compare_all_approaches:
     cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
       python3 --output book/notebooks/12_compare_all_approaches.ipynb 
@@ -485,43 +573,43 @@ stages:
       pipeline/_strip_jupytext_metadata.py 
       book/notebooks/12_compare_all_approaches.ipynb
     deps:
-    - path: data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+    - path: data/processed/pecd_wind_onshore_capacity_factors.parquet
       hash: md5
-      md5: 9fee96f894d0d24bb7b28df3b76a540a
-      size: 2681804
+      md5: 0284b97259860845add1711ae124e113
+      size: 2296648
     - path: data/processed/target_panel.parquet
       hash: md5
       md5: 103b2a6e367e505737794c1e0fe10aa5
       size: 1967734
-    - path: data/processed/wind_onshore_full_year_2020_cf.parquet
+    - path: data/processed/wind_onshore_full_year_cf.parquet
       hash: md5
-      md5: b2b234aba700ecdbeb06c13b183ca89a
-      size: 770515
+      md5: 162caf14f3bf5155fad5fcc1dbae9a5b
+      size: 3612379
     - path: pecdr/capacity_weighting.py
       hash: md5
-      md5: 5b63ea98b3dded423316094c89118994
-      size: 3025
-    - path: pecdr/pecd_io.py
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
       hash: md5
-      md5: d319205cf33c103ce7e73bf426174d5a
-      size: 3958
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
     - path: pipeline/12_compare_all_approaches.py
       hash: md5
-      md5: 97b07ba270d62f0bdec39d5eb496c97b
-      size: 6337
+      md5: d2e34c1dee0e965acf4a38a176b6d989
+      size: 7510
     outs:
     - path: book/notebooks/12_compare_all_approaches.ipynb
       hash: md5
-      md5: f6742182fca4d52fe6fbc9b2048396a7
-      size: 16548
+      md5: fa1ba9b5a3b5f1e9748050cdaa604b20
+      size: 25767
     - path: output/images/12_all_approaches_timeseries.png
       hash: md5
-      md5: e660145ff8ef35c3d8b11b72ed0556d6
-      size: 576593
+      md5: f2be256219aad68acec0afebd123b139
+      size: 542980
     - path: output/images/12_approaches_vs_smard.png
       hash: md5
-      md5: 864449759bf72163032a0f82dc47ec80
-      size: 376735
+      md5: f6cc19019a0e91782fff76d5126395cb
+      size: 517721
   download_smard:
     cmd: uv run python pipeline/13_download_smard.py
     deps:
@@ -643,13 +731,13 @@ stages:
       size: 3958
     - path: pipeline/17_process_pecd_capacity_factors.py
       hash: md5
-      md5: f6813e792c07c56f2947fe0e072fc9a2
-      size: 2489
+      md5: 711a89471589a085c6a519e7d029a393
+      size: 3166
     outs:
     - path: data/processed/pecd_solar_capacity_factors.parquet
       hash: md5
-      md5: fc99cff58e67559e171fa3d0d0f736e5
-      size: 51558552
+      md5: f1ac7e3e0f6162d5e04aac0f3a84e1f9
+      size: 51558551
     - path: data/processed/pecd_wind_offshore_capacity_factors.parquet
       hash: md5
       md5: fc0302a6df4558f45f41a11788b71060
@@ -720,8 +808,8 @@ stages:
       size: 85527869
     - path: data/processed/pecd_solar_capacity_factors.parquet
       hash: md5
-      md5: fc99cff58e67559e171fa3d0d0f736e5
-      size: 51558552
+      md5: f1ac7e3e0f6162d5e04aac0f3a84e1f9
+      size: 51558551
     - path: pecdr/era5.py
       hash: md5
       md5: ffa79d2122af6f798271055b31f0f9be
@@ -788,3 +876,227 @@ stages:
       hash: md5
       md5: 17b561dd09ee3affd7c268d6a77e8825
       size: 1263296
+  analyse_bias_drivers:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/22_analyse_bias_drivers.ipynb 
+      pipeline/22_analyse_bias_drivers.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/22_analyse_bias_drivers.ipynb
+    deps:
+    - path: data/processed/pecd_wind_onshore_capacity_factors.parquet
+      hash: md5
+      md5: 0284b97259860845add1711ae124e113
+      size: 2296648
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: data/processed/wind_onshore_full_year_cf.parquet
+      hash: md5
+      md5: 162caf14f3bf5155fad5fcc1dbae9a5b
+      size: 3612379
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pipeline/22_analyse_bias_drivers.py
+      hash: md5
+      md5: 082ee24f21891a0856bd9368f8dde6b2
+      size: 14111
+    outs:
+    - path: book/notebooks/22_analyse_bias_drivers.ipynb
+      hash: md5
+      md5: 78d0574052b4f93a246597748cb08480
+      size: 27192
+    - path: output/images/22_bias_by_hour.png
+      hash: md5
+      md5: dae7e10980c82816d589b81c7f9c1577
+      size: 77794
+    - path: output/images/22_bias_by_month.png
+      hash: md5
+      md5: 699f2b6fd0b3609ceaea99d86c4e258d
+      size: 40026
+    - path: output/images/22_bias_by_year.png
+      hash: md5
+      md5: 26159ceb6cad3a4e1b37142a64c66caf
+      size: 41659
+    - path: output/images/22_bias_vs_cf_level.png
+      hash: md5
+      md5: 0808778f90a71575381885260f327e59
+      size: 51550
+    - path: output/images/22_bias_vs_oversupply.png
+      hash: md5
+      md5: 4ded248a2c8d60233e0c02dc4168b8c1
+      size: 50610
+  bias_correct_walk_forward:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/23_bias_correct_walk_forward.ipynb 
+      pipeline/23_bias_correct_walk_forward.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/23_bias_correct_walk_forward.ipynb
+    deps:
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: data/processed/wind_onshore_full_year_cf.parquet
+      hash: md5
+      md5: 162caf14f3bf5155fad5fcc1dbae9a5b
+      size: 3612379
+    - path: pecdr/bias_correction.py
+      hash: md5
+      md5: 47e01ce75fea9b87cc1cca21470afabe
+      size: 1586
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pipeline/23_bias_correct_walk_forward.py
+      hash: md5
+      md5: c1e66e94766d2ef54aa7dfad83d38951
+      size: 6610
+    outs:
+    - path: book/notebooks/23_bias_correct_walk_forward.ipynb
+      hash: md5
+      md5: 2046194c2c8bcff3c93099ab3885ee00
+      size: 14486
+    - path: output/images/23_bias_correction_by_year.png
+      hash: md5
+      md5: 4869f87a8d37e88869abbe6cfddcc2f7
+      size: 63916
+    - path: output/images/23_raw_vs_corrected_scatter.png
+      hash: md5
+      md5: 4fe0e81f94c8df7e67a88f7b870491be
+      size: 389348
+  build_solar_capacity_by_nuts2_month:
+    cmd: uv run python pipeline/24_build_solar_capacity_by_nuts2_month.py
+    deps:
+    - path: pecdr/solar_technology.py
+      hash: md5
+      md5: 8bcc5a0d8bb4902338f1994037b83a7d
+      size: 2601
+    - path: pipeline/24_build_solar_capacity_by_nuts2_month.py
+      hash: md5
+      md5: 861a0a4f7878789050a86208fabb7659
+      size: 3992
+    outs:
+    - path: data/processed/solar_capacity_by_nuts2_month.parquet
+      hash: md5
+      md5: 7c150064c796ba705c1d9ec00abae5f1
+      size: 154691
+    - path: data/processed/solar_capacity_by_pv_category_month.parquet
+      hash: md5
+      md5: 8595a65ea8308c99c5e11a70e2b573c4
+      size: 9255
+    - path: data/processed/solar_unit_technology.parquet
+      hash: md5
+      md5: 877cc79db91772abb27b64d177409251
+      size: 93851151
+  compare_solar_approaches:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/25_compare_solar_approaches.ipynb 
+      pipeline/25_compare_solar_approaches.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/25_compare_solar_approaches.ipynb
+    deps:
+    - path: data/processed/own_solar_capacity_factors.parquet
+      hash: md5
+      md5: 728b87eb3e43ff5324a44eaab72e9154
+      size: 14395077
+    - path: data/processed/pecd_solar_capacity_factors.parquet
+      hash: md5
+      md5: f1ac7e3e0f6162d5e04aac0f3a84e1f9
+      size: 51558551
+    - path: data/processed/solar_capacity_by_nuts2_month.parquet
+      hash: md5
+      md5: 7c150064c796ba705c1d9ec00abae5f1
+      size: 154691
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pipeline/25_compare_solar_approaches.py
+      hash: md5
+      md5: de192e43ae5c02d28af505d3c47f9bb8
+      size: 6976
+    outs:
+    - path: book/notebooks/25_compare_solar_approaches.ipynb
+      hash: md5
+      md5: 97e06dfb2503249f31360635a3614a83
+      size: 23852
+    - path: output/images/25_solar_approaches_timeseries.png
+      hash: md5
+      md5: 67470801368c1b347ab67d5226be8a5c
+      size: 159200
+    - path: output/images/25_solar_approaches_vs_smard.png
+      hash: md5
+      md5: f0682855fd70a86e451b20b8585ee6de
+      size: 547193
+  analyse_solar_bias_drivers:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/26_analyse_solar_bias_drivers.ipynb 
+      pipeline/26_analyse_solar_bias_drivers.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/26_analyse_solar_bias_drivers.ipynb
+    deps:
+    - path: data/processed/pecd_solar_capacity_factors.parquet
+      hash: md5
+      md5: f1ac7e3e0f6162d5e04aac0f3a84e1f9
+      size: 51558551
+    - path: data/processed/solar_capacity_by_nuts2_month.parquet
+      hash: md5
+      md5: 7c150064c796ba705c1d9ec00abae5f1
+      size: 154691
+    - path: data/processed/solar_capacity_by_pv_category_month.parquet
+      hash: md5
+      md5: 8595a65ea8308c99c5e11a70e2b573c4
+      size: 9255
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pipeline/26_analyse_solar_bias_drivers.py
+      hash: md5
+      md5: a1270e27b730772538020b889945ee35
+      size: 10764
+    outs:
+    - path: book/notebooks/26_analyse_solar_bias_drivers.ipynb
+      hash: md5
+      md5: c18365dbbea9384eb26f6693046aa72d
+      size: 22370
+    - path: output/images/26_bias_by_hour.png
+      hash: md5
+      md5: 4911ac78d8af12958f126a86b2c44427
+      size: 51027
+    - path: output/images/26_bias_by_month.png
+      hash: md5
+      md5: db4ccfd99aa6d735a03c4d74ff0b5fbe
+      size: 32330
+    - path: output/images/26_bias_by_year.png
+      hash: md5
+      md5: 3b51c21f78a92ba3793312164667399c
+      size: 32141
+    - path: output/images/26_bias_vs_cf_level.png
+      hash: md5
+      md5: 389d3f89b7507659323243d40875ddd0
+      size: 34989
+    - path: output/images/26_bias_vs_self_consumption.png
+      hash: md5
+      md5: b402592bea699828ed79e9a90036ff10
+      size: 38083

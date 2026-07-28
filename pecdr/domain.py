@@ -19,3 +19,8 @@ GERMANY_PEON_AREA = [55.0, 6.0, 47.25, 15.0]
 # yet replicated here.
 SNAPSHOT_TIMESTAMPS = ["2020-01-15T00:00", "2020-06-15T12:00"]
 SNAPSHOT_YEAR = "2020"
+
+# Every full calendar year this project's own ERA5 archive
+# (pipeline/15_download_era5_full_period.py, data/downloads/era5/) covers
+# completely -- 2018 and 2026 are only partially downloaded, so excluded.
+FULL_YEAR_BACKTEST_YEARS = [str(y) for y in range(2019, 2026)]

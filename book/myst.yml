@@ -19,6 +19,12 @@ project:
         - file: notebooks/09_replicate_wind_onshore_capacity_factor.ipynb
         - file: notebooks/11_analyse_wind_onshore_full_year.ipynb
         - file: notebooks/12_compare_all_approaches.ipynb
+        - file: notebooks/22_analyse_bias_drivers.ipynb
+        - file: notebooks/23_bias_correct_walk_forward.ipynb
+    - title: Solar PV replication
+      children:
+        - file: notebooks/25_compare_solar_approaches.ipynb
+        - file: notebooks/26_analyse_solar_bias_drivers.ipynb
 site:
   options:
     folders: true

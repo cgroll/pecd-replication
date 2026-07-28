@@ -352,6 +352,50 @@ class ProjPaths:
         return self.mastr_project_path / "data" / "processed" / "capacity_by_wind_offshore_grid_month.parquet"
 
     @property
+    def mastr_solar_technical_detail_file(self) -> Path:
+        """Per-solar-unit technical detail (main_orientation,
+        main_orientation_tilt_bucket), keyed by unit_id -- joins against
+        `mastr_capacity_events_file`. See
+        ~/research/mastr-power-capacities-germany/pipeline/01_download_mastr.py.
+        """
+        return self.mastr_project_path / "data" / "downloads" / "mastr_units_raw" / "solar_technical_detail.parquet"
+
+    @property
+    def solar_unit_technology_file(self) -> Path:
+        """Per-solar-unit panel classified into PECD's 4 PV technology codes
+        (60/61/62/63 -- see pecdr/solar_technology.py): unit_id, capacity_mw,
+        nuts2_region, pecd_technology, commissioning_date,
+        final_shutdown_date. See
+        pipeline/24_build_solar_capacity_by_nuts2_month.py.
+        """
+        return self.processed_data_path / "solar_unit_technology.parquet"
+
+    @property
+    def solar_capacity_by_nuts2_month_file(self) -> Path:
+        """Monthly (time-varying) solar capacity by NUTS2 zone x PECD
+        technology x month, from 2015 on -- same role as
+        `mastr_capacity_by_peon_month_file` but for solar, built locally
+        since the sibling project's own NUTS2 panel
+        (`capacity_by_nuts2_month.parquet`) splits by feed-in category, not
+        by PECD's technology codes. See
+        pipeline/24_build_solar_capacity_by_nuts2_month.py.
+        """
+        return self.processed_data_path / "solar_capacity_by_nuts2_month.parquet"
+
+    @property
+    def solar_capacity_by_pv_category_month_file(self) -> Path:
+        """Monthly (time-varying) national solar capacity by MaStR feed-in
+        category (`pv_category`: full_feed_in / self_consumption_no_storage /
+        self_consumption_with_storage / unknown) x month -- used to check
+        whether the self-consumed (behind-the-meter) share of the fleet
+        predicts part of the gross-model-vs-SMARD-net bias (see
+        pipeline/26_analyse_solar_bias_drivers.py and
+        ../markdown/index.md's "behind-the-meter blind spot" discussion).
+        See pipeline/24_build_solar_capacity_by_nuts2_month.py.
+        """
+        return self.processed_data_path / "solar_capacity_by_pv_category_month.parquet"
+
+    @property
     def delu_project_path(self) -> Path:
         """Root of ~/research/delu-headline-forecast, read directly for its
         already-downloaded ERA5 archive (same "consume a sibling project's
@@ -376,21 +420,37 @@ class ProjPaths:
 
     @property
     def wind_onshore_full_year_cf_file(self) -> Path:
-        """Hourly modeled PEON zone + national capacity factor for all of 2020.
+        """Hourly modeled PEON zone + national capacity factor, every hour of
+        every year in `pecdr.domain.FULL_YEAR_BACKTEST_YEARS`, each year run
+        through *that year's own* start-of-year fleet (see
+        `wind_onshore_plant_panel_by_year_file`), not today's.
 
         One row per hour, columns DE01-DE07 + `national`. See
         pipeline/10_compute_wind_onshore_full_year.py.
         """
-        return self.processed_data_path / "wind_onshore_full_year_2020_cf.parquet"
+        return self.processed_data_path / "wind_onshore_full_year_cf.parquet"
 
     @property
     def wind_onshore_plant_panel_file(self) -> Path:
-        """Active onshore wind plants, one row per unit: capacity, hub height,
-        rotor diameter, turbine model, coordinates, nearest 0.25-degree grid
-        cell, and dominant PEON zone. See
-        pipeline/08_build_wind_onshore_plant_panel.py.
+        """Active onshore wind plants *today*, one row per unit: capacity, hub
+        height, rotor diameter, turbine model, coordinates, nearest
+        0.25-degree grid cell, and dominant PEON zone. Used by
+        pipeline/09_replicate_wind_onshore_capacity_factor.py's two-snapshot
+        check. See pipeline/08_build_wind_onshore_plant_panel.py and
+        `wind_onshore_plant_panel_by_year_file` for the year-start variant
+        used by the full-year backtest.
         """
         return self.processed_data_path / "wind_onshore_plant_panel.parquet"
+
+    def wind_onshore_plant_panel_by_year_file(self, year: str) -> Path:
+        """Active onshore wind plants as of Jan 1 of `year` -- same shape as
+        `wind_onshore_plant_panel_file`, but reconstructed from each unit's
+        MaStR `commissioning_date`/`final_shutdown_date` instead of "active
+        today", so the full-year backtest runs each year's weather through
+        that year's own fleet rather than today's larger, newer one. See
+        pecdr/plant_panel.py and pipeline/08_build_wind_onshore_plant_panel.py.
+        """
+        return self.processed_data_path / f"wind_onshore_plant_panel_{year}.parquet"
 
     # ------------------------------------------------------------------ #
     # Helpers                                                              #

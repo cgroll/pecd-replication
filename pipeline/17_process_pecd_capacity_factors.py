@@ -36,6 +36,18 @@ for tech in SOLAR_TECHNOLOGIES:
     solar_parts[tech] = df
 
 solar = pd.concat(solar_parts, axis=1, names=["technology", "region"])
+
+# PECD's solar CF timestamps run 1 hour ahead of true UTC (confirmed
+# empirically: shifting this series back by 1 hour, alone, cuts its MAE
+# against SMARD's actual PV generation roughly in half and its diurnal
+# bias amplitude by ~4x -- see pipeline/26_analyse_solar_bias_drivers.py.
+# Not present in PECD's wind product (tested the same way, no improvement
+# from shifting), so likely inherited from ERA5's solar-radiation
+# variables being *accumulated over the preceding hour* while wind speed
+# is instantaneous -- a labeling convention PECD's own product apparently
+# doesn't correct for, unlike (e.g.) its wind data.
+solar.index = solar.index - pd.Timedelta(hours=1)
+
 solar.to_parquet(paths.pecd_solar_capacity_factors_file)
 print(f"Saved solar: {solar.shape} -> {paths.pecd_solar_capacity_factors_file}\n")
 

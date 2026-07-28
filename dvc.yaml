@@ -141,11 +141,20 @@ stages:
     cmd: uv run python pipeline/08_build_wind_onshore_plant_panel.py
     deps:
       - pipeline/08_build_wind_onshore_plant_panel.py
+      - pecdr/plant_panel.py
+      - pecdr/domain.py
       - pecdr/grid.py
       - pecdr/peon_zones.py
       - data/downloads/pecd/peon_region_mask.zip
     outs:
       - data/processed/wind_onshore_plant_panel.parquet
+      - data/processed/wind_onshore_plant_panel_2019.parquet
+      - data/processed/wind_onshore_plant_panel_2020.parquet
+      - data/processed/wind_onshore_plant_panel_2021.parquet
+      - data/processed/wind_onshore_plant_panel_2022.parquet
+      - data/processed/wind_onshore_plant_panel_2023.parquet
+      - data/processed/wind_onshore_plant_panel_2024.parquet
+      - data/processed/wind_onshore_plant_panel_2025.parquet
 
   replicate_wind_bias_correction:
     cmd: >-
@@ -253,13 +262,20 @@ stages:
       - pipeline/10_compute_wind_onshore_full_year.py
       - pecdr/full_year.py
       - pecdr/plant_model.py
-      - data/processed/wind_onshore_plant_panel.parquet
+      - pecdr/domain.py
+      - data/processed/wind_onshore_plant_panel_2019.parquet
+      - data/processed/wind_onshore_plant_panel_2020.parquet
+      - data/processed/wind_onshore_plant_panel_2021.parquet
+      - data/processed/wind_onshore_plant_panel_2022.parquet
+      - data/processed/wind_onshore_plant_panel_2023.parquet
+      - data/processed/wind_onshore_plant_panel_2024.parquet
+      - data/processed/wind_onshore_plant_panel_2025.parquet
       - data/downloads/pecd/climatology_era5_100m.zip
       - data/downloads/pecd/climatology_gwa2_100m.zip
       - data/downloads/pecd/power_law_coefficient.zip
       - data/downloads/era5
     outs:
-      - data/processed/wind_onshore_full_year_2020_cf.parquet
+      - data/processed/wind_onshore_full_year_cf.parquet
 
   analyse_wind_onshore_full_year:
     cmd: >-
@@ -271,10 +287,16 @@ stages:
       book/notebooks/11_analyse_wind_onshore_full_year.ipynb
     deps:
       - pipeline/11_analyse_wind_onshore_full_year.py
-      - pecdr/pecd_io.py
-      - data/processed/wind_onshore_full_year_2020_cf.parquet
-      - data/processed/wind_onshore_plant_panel.parquet
-      - data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      - pecdr/domain.py
+      - data/processed/wind_onshore_full_year_cf.parquet
+      - data/processed/wind_onshore_plant_panel_2019.parquet
+      - data/processed/wind_onshore_plant_panel_2020.parquet
+      - data/processed/wind_onshore_plant_panel_2021.parquet
+      - data/processed/wind_onshore_plant_panel_2022.parquet
+      - data/processed/wind_onshore_plant_panel_2023.parquet
+      - data/processed/wind_onshore_plant_panel_2024.parquet
+      - data/processed/wind_onshore_plant_panel_2025.parquet
+      - data/processed/pecd_wind_onshore_capacity_factors.parquet
     outs:
       - book/notebooks/11_analyse_wind_onshore_full_year.ipynb:
           cache: false
@@ -294,9 +316,9 @@ stages:
     deps:
       - pipeline/12_compare_all_approaches.py
       - pecdr/capacity_weighting.py
-      - pecdr/pecd_io.py
-      - data/processed/wind_onshore_full_year_2020_cf.parquet
-      - data/downloads/pecd/pecd_peon_capacity_factor_2020.zip
+      - pecdr/domain.py
+      - data/processed/wind_onshore_full_year_cf.parquet
+      - data/processed/pecd_wind_onshore_capacity_factors.parquet
       - data/processed/target_panel.parquet
     outs:
       - book/notebooks/12_compare_all_approaches.ipynb:
@@ -304,6 +326,58 @@ stages:
       - output/images/12_all_approaches_timeseries.png:
           cache: false
       - output/images/12_approaches_vs_smard.png:
+          cache: false
+
+  analyse_bias_drivers:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/22_analyse_bias_drivers.ipynb
+      pipeline/22_analyse_bias_drivers.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/22_analyse_bias_drivers.ipynb
+    deps:
+      - pipeline/22_analyse_bias_drivers.py
+      - pecdr/capacity_weighting.py
+      - pecdr/domain.py
+      - data/processed/wind_onshore_full_year_cf.parquet
+      - data/processed/pecd_wind_onshore_capacity_factors.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/22_analyse_bias_drivers.ipynb:
+          cache: false
+      - output/images/22_bias_vs_cf_level.png:
+          cache: false
+      - output/images/22_bias_by_year.png:
+          cache: false
+      - output/images/22_bias_by_month.png:
+          cache: false
+      - output/images/22_bias_by_hour.png:
+          cache: false
+      - output/images/22_bias_vs_oversupply.png:
+          cache: false
+
+  bias_correct_walk_forward:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/23_bias_correct_walk_forward.ipynb
+      pipeline/23_bias_correct_walk_forward.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/23_bias_correct_walk_forward.ipynb
+    deps:
+      - pipeline/23_bias_correct_walk_forward.py
+      - pecdr/bias_correction.py
+      - pecdr/capacity_weighting.py
+      - pecdr/domain.py
+      - data/processed/wind_onshore_full_year_cf.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/23_bias_correct_walk_forward.ipynb:
+          cache: false
+      - output/images/23_bias_correction_by_year.png:
+          cache: false
+      - output/images/23_raw_vs_corrected_scatter.png:
           cache: false
 
   process_era5_capacity_factors:
@@ -335,3 +409,65 @@ stages:
     outs:
       - data/processed/own_wind_onshore_gridweighted_features.parquet
       - data/processed/own_wind_offshore_gridweighted_features.parquet
+
+  build_solar_capacity_by_nuts2_month:
+    cmd: uv run python pipeline/24_build_solar_capacity_by_nuts2_month.py
+    deps:
+      - pipeline/24_build_solar_capacity_by_nuts2_month.py
+      - pecdr/solar_technology.py
+    outs:
+      - data/processed/solar_unit_technology.parquet
+      - data/processed/solar_capacity_by_nuts2_month.parquet
+      - data/processed/solar_capacity_by_pv_category_month.parquet
+
+  compare_solar_approaches:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/25_compare_solar_approaches.ipynb
+      pipeline/25_compare_solar_approaches.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/25_compare_solar_approaches.ipynb
+    deps:
+      - pipeline/25_compare_solar_approaches.py
+      - pecdr/capacity_weighting.py
+      - data/processed/solar_capacity_by_nuts2_month.parquet
+      - data/processed/pecd_solar_capacity_factors.parquet
+      - data/processed/own_solar_capacity_factors.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/25_compare_solar_approaches.ipynb:
+          cache: false
+      - output/images/25_solar_approaches_timeseries.png:
+          cache: false
+      - output/images/25_solar_approaches_vs_smard.png:
+          cache: false
+
+  analyse_solar_bias_drivers:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/26_analyse_solar_bias_drivers.ipynb
+      pipeline/26_analyse_solar_bias_drivers.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/26_analyse_solar_bias_drivers.ipynb
+    deps:
+      - pipeline/26_analyse_solar_bias_drivers.py
+      - pecdr/capacity_weighting.py
+      - data/processed/solar_capacity_by_nuts2_month.parquet
+      - data/processed/solar_capacity_by_pv_category_month.parquet
+      - data/processed/pecd_solar_capacity_factors.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/26_analyse_solar_bias_drivers.ipynb:
+          cache: false
+      - output/images/26_bias_vs_cf_level.png:
+          cache: false
+      - output/images/26_bias_by_month.png:
+          cache: false
+      - output/images/26_bias_by_hour.png:
+          cache: false
+      - output/images/26_bias_by_year.png:
+          cache: false
+      - output/images/26_bias_vs_self_consumption.png:
+          cache: false

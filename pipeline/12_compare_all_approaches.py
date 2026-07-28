@@ -34,15 +34,13 @@
 # Plus **SMARD's actual DE-LU wind-onshore generation** as the real-world
 # ground truth none of the three are derived from.
 #
-# **Fleet-vintage caveat**: approaches 1, 2, and the SMARD-implied CF below
-# all use MaStR's *time-varying* monthly capacity as the weighting
-# denominator (`pecdr.capacity_weighting`), matching each hour's actual
-# installed capacity. Approach 3 (this project) still uses a **fixed
-# "active today" fleet** applied retroactively to all of 2020
-# (`pipeline/08_build_wind_onshore_plant_panel.py`) -- so any gap between
-# approach 3 and the others partly reflects that fleet-size mismatch, not
-# only a modeling difference. Not yet reconciled; flagged rather than
-# silently ignored.
+# All four series now use a fleet-vintage-correct weighting: approaches 1,
+# 2, and the SMARD-implied CF use MaStR's *time-varying* monthly capacity
+# as the weighting denominator (`pecdr.capacity_weighting`); approach 3
+# (this project) runs each year's weather through **that year's own**
+# start-of-year fleet (`pipeline/08_build_wind_onshore_plant_panel.py`,
+# `pipeline/10_compute_wind_onshore_full_year.py`) rather than today's
+# fleet applied retroactively.
 
 # %%
 import matplotlib.pyplot as plt
@@ -50,22 +48,22 @@ import numpy as np
 import pandas as pd
 
 from pecdr.capacity_weighting import capacity_weighted_cf, total_hourly_capacity
+from pecdr.domain import FULL_YEAR_BACKTEST_YEARS
 from pecdr.paths import ProjPaths
-from pecdr.pecd_io import load_region_timeseries_zip
 
 paths = ProjPaths()
 paths.ensure_directories()
 
-YEAR = "2020"
+PERIOD_LABEL = f"{FULL_YEAR_BACKTEST_YEARS[0]}-{FULL_YEAR_BACKTEST_YEARS[-1]}"
 
 # %% [markdown]
-# ## Load all four series, all as capacity factor, all restricted to 2020
+# ## Load all four series, all as capacity factor, restricted to the common backtest period
 
 # %%
 mastr_peon_month = pd.read_parquet(paths.mastr_capacity_by_peon_month_file)
 
 # Approach 1: PECD's own PEON zone CF x time-varying MaStR PEON capacity
-pecd_peon_cf = load_region_timeseries_zip(paths.pecd_peon_capacity_factor_zip(YEAR))
+pecd_peon_cf = pd.read_parquet(paths.pecd_wind_onshore_capacity_factors_file)
 approach1 = capacity_weighted_cf(pecd_peon_cf, mastr_peon_month)
 
 # Approach 2: delu's own raw-ERA5 + generic-curve PEON zone CF, same weights
@@ -73,7 +71,7 @@ delu_own_cf = pd.read_parquet(paths.delu_own_wind_onshore_capacity_factors_file)
 delu_own_cf.index.name = "timestamp"
 approach2 = capacity_weighted_cf(delu_own_cf, mastr_peon_month)
 
-# Approach 3: this project's replication (already national, fixed current fleet)
+# Approach 3: this project's replication (already national, each year's own fleet)
 approach3 = pd.read_parquet(paths.wind_onshore_full_year_cf_file)["national"]
 
 # SMARD actual generation (MW) -> implied CF via time-varying total capacity
@@ -87,12 +85,12 @@ comparison = pd.DataFrame({
     "3_pecd_replication": approach3,
     "4_smard_implied": smard_implied_cf,
 })
-comparison = comparison.loc[YEAR].dropna(how="all")
+comparison = comparison.loc[FULL_YEAR_BACKTEST_YEARS[0]:FULL_YEAR_BACKTEST_YEARS[-1]].dropna(how="all")
 print(f"Hours with at least one series: {len(comparison):,}")
 comparison.describe()
 
 # %% [markdown]
-# ## Full-year time series, all four series
+# ## Full-period time series, all four series
 
 # %%
 fig, ax = plt.subplots(figsize=(14, 5))
@@ -102,9 +100,9 @@ for col, label in [
     ("3_pecd_replication", "3. This project's PECD replication"),
     ("4_smard_implied", "4. SMARD actual (implied CF)"),
 ]:
-    comparison[col].plot(ax=ax, label=label, alpha=0.7, linewidth=0.5)
+    comparison[col].plot(ax=ax, label=label, alpha=0.7, linewidth=0.3)
 ax.set_ylabel("Germany-wide onshore wind capacity factor")
-ax.set_title(f"All four approaches, {YEAR}")
+ax.set_title(f"All four approaches, {PERIOD_LABEL}")
 ax.legend()
 fig.tight_layout()
 fig.savefig(paths.images_path / "12_all_approaches_timeseries.png", dpi=150, bbox_inches="tight")
@@ -113,7 +111,7 @@ plt.show()
 # %% [markdown]
 # ```{figure} ../../output/images/12_all_approaches_timeseries.png
 # :name: fig-12-all-approaches-timeseries
-# All four wind-onshore capacity factor series, full year 2020.
+# All four wind-onshore capacity factor series, 2019-2025.
 # ```
 
 # %% [markdown]
@@ -133,7 +131,7 @@ for ax, col, label in zip(axes, ["1_pecd_official_x_mastr", "2_delu_physics_no_b
     corr = sub[col].corr(sub["4_smard_implied"])
     stats_rows.append({"approach": label, "n_hours": len(sub), "mae": float(diff.abs().mean()), "bias": float(diff.mean()), "corr": float(corr)})
 
-    ax.scatter(sub["4_smard_implied"], sub[col], s=2, alpha=0.15)
+    ax.scatter(sub["4_smard_implied"], sub[col], s=2, alpha=0.05)
     lims = [0, max(sub.max())]
     ax.plot(lims, lims, "k--", alpha=0.5, label="1:1")
     ax.set_xlabel("SMARD-implied CF")
@@ -149,5 +147,36 @@ stats
 # %% [markdown]
 # ```{figure} ../../output/images/12_approaches_vs_smard.png
 # :name: fig-12-approaches-vs-smard
-# Each modeled approach vs. SMARD's actual (implied) capacity factor, 2020.
+# Each modeled approach vs. SMARD's actual (implied) capacity factor, 2019-2025.
 # ```
+
+# %% [markdown]
+# ## Does each approach's fit to SMARD hold up year to year?
+#
+# The pooled stats above could hide a single unusual year. Breaking out
+# bias/MAE/corr by year checks whether the fit is stable across the whole
+# backtest period, not just true on average.
+
+# %%
+yearly_rows = []
+for col, label in [
+    ("1_pecd_official_x_mastr", "1. PECD official x MaStR"),
+    ("2_delu_physics_no_bias", "2. delu physics"),
+    ("3_pecd_replication", "3. PECD replication"),
+]:
+    sub = comparison[[col, "4_smard_implied"]].dropna()
+    diff = sub[col] - sub["4_smard_implied"]
+    for year, group in diff.groupby(diff.index.year):
+        approach_group = sub.loc[group.index, col]
+        smard_group = sub.loc[group.index, "4_smard_implied"]
+        yearly_rows.append({
+            "approach": label,
+            "year": year,
+            "n_hours": len(group),
+            "mae": float(group.abs().mean()),
+            "bias": float(group.mean()),
+            "corr": float(approach_group.corr(smard_group)),
+        })
+
+yearly_stats = pd.DataFrame(yearly_rows).pivot(index="year", columns="approach", values=["bias", "mae", "corr"])
+yearly_stats

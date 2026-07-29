@@ -7,12 +7,12 @@ It is written for human contributors and AI agents alike.
 
 ```
 project-root/
-├── pkg/                     # Python package — shared utilities
+├── pecdr/                   # Python package — shared utilities
 │   ├── __init__.py
 │   └── paths.py             # Centralized path configuration
-├── pipeline/                # Data pipeline scripts
-│   ├── 01_download_*.py     # Pure data acquisition (no charts)
-│   ├── 02_analyse_*.py      # Analysis scripts → become book notebooks
+├── pipeline/                # Data pipeline scripts, numbered by build order
+│   ├── NN_download_*.py     # Pure data acquisition (no charts)
+│   ├── NN_analyse_*.py      # Analysis scripts → become book notebooks
 │   └── _strip_jupytext_metadata.py  # Shared post-processing helper
 ├── book/                    # MyST Jupyter Book source
 │   ├── notebooks/           # Executed .ipynb files (produced by DVC)
@@ -125,13 +125,20 @@ maintain — running bare `dvc repro` builds every stage that is out of date.
 
 ### Two types of scripts
 
-**1. Pure data scripts** (`01_*`, `00_*`, …)
+Every `pipeline/*.py` file gets a sequential number reflecting build
+order (`01_`, `02_`, …), shared across both workstreams in this repo
+(wind, then solar) — the number does *not* indicate which of the two
+types below a script is; that's determined purely by whether it produces
+charts, checked directly in each stage's `dvc.yaml` `cmd` (a bare `uv run
+python pipeline/NN_*.py` vs. a `jupytext --execute` invocation).
+
+**1. Pure data scripts** — data acquisition or pure processing, no charts
 - No charts or visualizations.
 - Read/write data files only.
-- Registered in `dvc.yaml` with `persist: true` outputs to avoid re-downloading.
-- Not converted to notebooks.
+- Downloads registered in `dvc.yaml` with `persist: true` outputs to avoid re-downloading; pure computation stages (e.g. a full-year backtest) just declare a normal `outs` entry.
+- Not converted to notebooks — `cmd` is a plain `uv run python pipeline/NN_*.py`.
 
-**2. Analysis scripts** (`02_*`, `03_*`, …)
+**2. Analysis scripts** — become book notebooks
 - Use jupytext `# %%` cell markers and a jupytext/kernelspec header.
 - Save all figures to `output/images/` via `fig.savefig()`.
 - Use MyST `{figure}` directives in `# %% [markdown]` cells.
@@ -202,10 +209,10 @@ no-op in headless mode.
 ## Path Conventions
 
 All scripts must be runnable from any working directory. Use `ProjPaths`
-from `pkg/paths.py`:
+from `pecdr/paths.py`:
 
 ```python
-from pkg.paths import ProjPaths
+from pecdr.paths import ProjPaths
 
 paths = ProjPaths()
 
@@ -226,7 +233,7 @@ Key paths:
 ## Adding a New Pipeline Stage
 
 1. **Write the script** in `pipeline/`.
-2. **Add a property** to `pkg/paths.py` for every new data file:
+2. **Add a property** to `pecdr/paths.py` for every new data file:
    ```python
    @property
    def my_new_file(self) -> Path:
@@ -236,7 +243,7 @@ Key paths:
 3. **Add a stage** to `dvc.yaml` with `cmd`, `deps`, and `outs` (use
    `cache: false` for anything under `book/notebooks/` or `output/images/`,
    and `persist: true` for downloaded data).
-4. **Add the notebook** to the `toc` in `book/myst.yml`.
+4. **Add the notebook** to the `toc` in `book/myst.yml` (analysis scripts only — pure data scripts produce no notebook).
 
 ## Git Conventions
 

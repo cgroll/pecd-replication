@@ -11,6 +11,61 @@ headline variables: wind generation, PV generation, and load (demand). This
 project itself is one building block toward that goal, not the end in
 itself — see [How this project fits the wider goal](#project-fit) below.
 
+## Current status: how well does each replication work?
+
+Both workstreams are checked the same way in the end: weight a modeled
+capacity factor up to a national figure using MaStR's own time-varying
+installed capacity, then compare against SMARD's actual net generation
+over the full 2019-2025 backtest (61,368 hours). Three points of
+comparison throughout: PECD's own official product (reweighted by MaStR
+capacity, not a replication at all — the best available anchor for "how
+good can this possibly get"), the simplest from-scratch physics baseline
+this project started from, and this project's own best replication.
+
+| Workstream | PECD official × MaStR | Naive physics baseline | This project's own replication |
+|---|---|---|---|
+| **Wind onshore** | MAE 0.029, corr 0.985 | MAE 0.089, corr 0.931 | **MAE 0.065, corr 0.983** |
+| **Solar PV** | MAE 0.016, corr 0.981 | MAE 0.057, corr 0.926 | **MAE 0.046, corr 0.937** |
+
+**Wind is essentially converged**: this project's full replication
+(GWA bias-adjusted wind speed, alpha hub-height extrapolation, per-plant
+power curves) reaches corr 0.983 against real SMARD generation — a hair
+under PECD's own 0.985, and far past the naive baseline's 0.931. The
+remaining open item is a systematic high-wind over-estimate, most likely
+from the wake-effect/farm-layout modeling this project deliberately
+doesn't attempt (see the roadmap below).
+
+**Solar has closed much of the gap but not all of it**: swapping in
+PECD's fully documented PV conversion chain (Skartveit-Olseth
+decomposition, Klucher transposition, Martin-Ruiz optical losses, a Beyer
+et al. efficiency polynomial, Ross cell temperature, real per-plant
+orientation from MaStR) took correlation against SMARD from 0.926 to
+0.937 and MAE from 0.057 to 0.046 — a real, year-over-year-consistent
+improvement over the naive baseline. But PECD's own product is still
+roughly 3x closer to reality (MAE 0.016 vs. 0.046) than this project's
+best replication gets. Open candidates, none conclusively resolved yet:
+
+- **PECD's documented inverter-loss polynomial** (Schmidt & Sauer, 1994):
+  applying it exactly as written makes the match against PECD's *own*
+  product worse, not better, so it's currently omitted — but that may
+  just trade one bias for another when checked against real generation
+  instead ([27](../notebooks/27_verify_solar_technology_physics.ipynb)).
+- **The overestimate grows sharply with output level**, plateauing
+  around +0.08-0.09 capacity-factor bias above ~30% output — consistent
+  with either missing inverter clipping or unmodeled self-consumption
+  (rooftop generation used behind the meter, disproportionately during
+  high-output hours) ([29](../notebooks/29_analyse_solar_full_year.ipynb)).
+- **All three solar approaches — including PECD's own official
+  product — get measurably worse year over year**, 2019 through 2025.
+  Since that includes PECD's own product, it isn't a flaw in either
+  physics chain specifically; more likely a growing self-consumption
+  share, unmodeled panel degradation, or a shifting technology mix
+  ([29](../notebooks/29_analyse_solar_full_year.ipynb)).
+- PECD's documented 15-minute **temporal downscaling** step was
+  implemented and tested — it makes no measurable difference, so it's
+  ruled out as an explanation for the remaining gap
+  ([27](../notebooks/27_verify_solar_technology_physics.ipynb)).
+
 ## Why physical modeling helps: residual load
 
 If we know the weather and which power plants exist, we can, in principle,
@@ -169,8 +224,8 @@ tells us *how good* a candidate feature is, not the end goal itself.
 | [04: Wind bias-correction replication](../notebooks/04_replicate_wind_bias_correction.ipynb) | Step 1 | Our GWA delta-adjustment vs. PECD's own bias-corrected wind speed grid — near-exact match (MAE ~0.0005 m/s) |
 | [05: Hub-height extrapolation](../notebooks/05_extrapolate_wind_to_hub_height.ipynb) | Step 2 | Internal-consistency check via PECD's precomputed alpha grid, since no direct ground truth exists |
 | [09: Wind-onshore capacity factor replication](../notebooks/09_replicate_wind_onshore_capacity_factor.ipynb) | Steps 3-4 (deliberately skipping step 5, simplifying step 6) | Per-plant power curves from MaStR + PECD's alpha, aggregated to PEON zone and compared against PECD's own zone capacity factors; surfaces a systematic high-wind over-estimate, most likely from the wake effects we deliberately don't model |
-| [11: Full-year validation](../notebooks/11_analyse_wind_onshore_full_year.ipynb) | Steps 3-4, extended | Same comparison across all 8,784 hours of 2020 rather than two snapshots — confirms the high-wind bias is systematic, not a fluke of which hours were picked |
-| [12: Comparing all three approaches](../notebooks/12_compare_all_approaches.ipynb) | Step 5 | Brings in SMARD's actual net generation as real-world ground truth; shows this project's replication tracks the true temporal pattern much better than the simple-physics approach (corr 0.981 vs. 0.930), while still carrying the same high-wind over-estimate — now confirmed against reality, not just against PECD's own numbers |
+| [11: Full-year validation](../notebooks/11_analyse_wind_onshore_full_year.ipynb) | Steps 3-4, extended | Same comparison across all 61,368 hours of 2019-2025 rather than two snapshots — confirms the high-wind bias is systematic, not a fluke of which hours were picked |
+| [12: Comparing all three approaches](../notebooks/12_compare_all_approaches.ipynb) | Step 5 | Brings in SMARD's actual net generation as real-world ground truth; shows this project's replication tracks the true temporal pattern much better than the simple-physics approach (corr 0.983 vs. 0.931), while still carrying the same high-wind over-estimate — now confirmed against reality, not just against PECD's own numbers |
 
 What isn't built yet, and is deliberately visible as a gap rather than
 papered over: wake-effect/layout correction (step 5 of PECD's own
@@ -178,3 +233,82 @@ methodology), curtailment, outages, and behind-the-meter self-consumption
 — none of these have a ground-truth series to check against, which is
 exactly why they're absent from every approach compared here, not only
 this project's.
+
+## Solar PV replication
+
+Same goal as wind — a physically-motivated PV generation feature, checked
+against PECD's own product and then against SMARD's real generation — but
+starting from a harder position: MaStR mostly lacks per-plant coordinates
+for solar (~95% missing), so weather has to stay at NUTS2 region
+resolution rather than per-plant grid cells, and PV physics has more
+conversion steps than a wind turbine's power curve (irradiance
+decomposition, plane-of-array transposition, optical losses, module
+efficiency, cell temperature, inverter losses).
+
+### PECD's own methodology (v4.2 Product User Guide)
+
+1. Decompose horizontal irradiance (GHI) into beam and diffuse components
+   (Skartveit-Olseth, 1987).
+2. Transpose onto the panel's actual plane of array — Klucher's (1979)
+   anisotropic sky model for diffuse sky radiation, plus a fixed-albedo
+   ground-reflected term.
+3. Apply optical (reflection) losses at the panel surface (Martin-Ruiz).
+4. Convert plane-of-array irradiance to module efficiency at 25°C via a
+   5-coefficient polynomial (Beyer et al., 2004), fit by PECD against real
+   German/French generation data.
+5. Correct for cell temperature (Ross, 1976) and a linear thermal
+   derating coefficient.
+6. Apply inverter losses via a 3-coefficient polynomial (Schmidt & Sauer,
+   1994).
+7. A two-step temporal downscaling (hourly GHI/TA interpolated to
+   15-minute resolution, capacity factor computed at that finer step,
+   then averaged back to hourly) to better capture sunrise/sunset
+   variability.
+
+### Our replication strategy
+
+Two versions have been built, in sequence:
+
+1. **A simple baseline** (`pecdr/physics.py`) — Erbs decomposition, one
+   fixed tilt/azimuth for all of Germany, Faiman cell temperature, a
+   generic PVWatts DC model. No technology split.
+2. **The full PECD-documented chain** (`pecdr/solar_config_physics.py`) —
+   every step above except inverter losses (see below), using each MaStR
+   unit's *actual* reported orientation and tilt bucket
+   (`pecdr/solar_orientation.py`) split across PECD's 4 technology
+   classes (industrial/residential rooftop, utility fixed/tracking).
+
+The documented inverter-loss polynomial (step 6) is implemented
+(`INVERTER_COEFS` in `pecdr/solar_config_physics.py`) but not applied: taken
+exactly as written and checked against the raw LaTeX source of the PUG
+(not a lossy prose extraction), it behaves like roughly capacity-factor
+squared across the operating range — a ~50% loss at half load, far more
+than any real inverter — and makes the match against PECD's own product
+markedly worse rather than better. Left out, with the discrepancy flagged
+in the code rather than silently resolved. The temporal-downscaling step
+(step 7) is implemented (`pecdr/temporal_downscaling.py`) and tested, and
+makes no measurable difference once an initial phase-mismatch bug (an
+hourly-average GHI value divided by an *instantaneous* clear-sky
+irradiance sample near sunset) was found and fixed.
+
+Prerequisite step, no notebook of its own: `pipeline/24` crosswalks MaStR
+units to PECD's 4 PV technology codes (industrial/residential rooftop,
+utility fixed/tracking — MaStR has no such labels natively) and builds a
+monthly (NUTS2 zone × technology) installed-capacity panel used
+throughout everything below.
+
+## Roadmap: solar notebooks
+
+| Notebook | What it shows |
+|---|---|
+| [25: First comparison against SMARD](../notebooks/25_compare_solar_approaches.ipynb) | PECD's own product vs. the simple baseline vs. SMARD's actual generation, full available period |
+| [26: Bias drivers](../notebooks/26_analyse_solar_bias_drivers.ipynb) | Explores whether the simple baseline's bias tracks capacity-factor level, month, year, or self-consumption share |
+| [27: Technology- and orientation-aware physics](../notebooks/27_verify_solar_technology_physics.ipynb) | Builds and verifies the full PECD-documented chain against PECD's own NUTS2 × technology product (corr 0.934, up from 0.921 with a simpler chain); tests and rules out temporal downscaling as a fix for the remaining gap |
+| [29: Full-period validation](../notebooks/29_analyse_solar_full_year.ipynb) | Extends 27 to the full 2019-2025 backtest and brings in SMARD as real-world ground truth — confirms the new chain is a consistent improvement over the simple baseline (corr 0.926 → 0.937, every year), while PECD's own product remains substantially closer to reality |
+
+What isn't resolved yet, same spirit as wind's open items: the
+inverter-loss discrepancy above, the sharp bias growth with output level,
+and the year-over-year bias drift shared by *all three* approaches
+(see [Current status](#current-status-how-well-does-each-replication-work)
+above) — none of these have an isolated ground-truth series to check
+against either.

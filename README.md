@@ -1,42 +1,35 @@
-# Pecd Replication
+# PECD Replication
 
-A template for research projects that publish a [MyST](https://mystmd.org/) Jupyter Book
-to GitHub Pages. The data pipeline is managed by [DVC](https://dvc.org/);
-dependencies are managed by [uv](https://docs.astral.sh/uv/).
+Replicating [PECD](https://data.jrc.ec.europa.eu/dataset/pecd)'s (the
+Pan-European Climate Database) wind and solar PV capacity-factor
+methodology for Germany, from public data (ERA5 weather, MaStR plant
+register, SMARD generation) — one building block toward forecasting the
+DE-LU bidding zone's headline variables (wind, PV, residual load). See
+[the book's introduction](book/markdown/index.md) for the full
+motivation, methodology, and a validation ladder for each step.
 
-## Starting a new project from this template
+Published as a [MyST](https://mystmd.org/) Jupyter Book at
+https://cgroll.github.io/pecd-replication/. The data pipeline is managed
+by [DVC](https://dvc.org/); dependencies by [uv](https://docs.astral.sh/uv/).
 
-### Pick your names up front
+## Current status
 
-You need two names:
+Both workstreams are checked against SMARD's actual net generation over
+the full 2019-2025 backtest, alongside PECD's own official product and
+this project's original naive physics baseline:
 
-| What | Example | Rule |
-|------|---------|------|
-| **Repository / folder name** | `financial-market-returns` | Chosen on GitHub when you create the repo — becomes the local folder name after cloning |
-| **Python package abbreviation** | `fmr` | Short acronym you pick yourself; used in every `import` statement |
+| Workstream | PECD official × MaStR | Naive physics baseline | This project's own replication |
+|---|---|---|---|
+| Wind onshore | MAE 0.029, corr 0.985 | MAE 0.089, corr 0.931 | **MAE 0.065, corr 0.983** |
+| Solar PV | MAE 0.016, corr 0.981 | MAE 0.057, corr 0.926 | **MAE 0.046, corr 0.937** |
 
-The abbreviation is the equivalent of `woe` in `world-of-energy`. It must be a
-valid Python identifier (letters, digits, underscores) — shorter is better.
+Wind's own replication is essentially converged with PECD's own accuracy;
+solar has closed much of the gap from the naive baseline but still has a
+meaningfully larger unresolved gap than wind. See
+[Current status](book/markdown/index.md#current-status-how-well-does-each-replication-work)
+in the book for what's driving the remaining gaps and what's still open.
 
-### 1. Create the repository on GitHub
-
-Click **Use this template → Create a new repository** at the top of this page.
-Name it (e.g. `financial-market-returns`) and click **Create repository**.
-
-### 2. Clone and initialize
-
-```bash
-git clone https://github.com/your-username/financial-market-returns.git
-cd financial-market-returns
-python init_project.py
-```
-
-The script reads the project name from the git remote automatically and asks
-only for the package abbreviation. It renames `pkg/`, updates all references
-in `pyproject.toml` and the pipeline scripts, commits the result, and removes
-itself.
-
-### 3. Set up the environment
+## Running it
 
 ```bash
 # Install uv if you haven't already — https://docs.astral.sh/uv/
@@ -45,40 +38,22 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 ```
 
-### 4. Verify the example pipeline
-
 ```bash
 make dry-run   # preview what would run
-make run       # execute the example pipeline
+make run       # execute the pipeline (dvc repro)
 make serve     # open http://localhost:3000 — live book preview
 ```
-
-Once everything works, remove the example files and start your own pipeline:
-
-```bash
-rm pipeline/01_download_example.py pipeline/02_analyse_example.py
-# Remove the example stage from dvc.yaml and the notebook entry from book/myst.yml
-```
-
-### 5. Enable GitHub Pages
-
-In your repository: **Settings → Pages → Source → GitHub Actions**.
-
-Every push to `main` will build and deploy the book automatically.
-Pull requests run only the build check.
 
 ## Project layout
 
 ```
 project-root/
-├── <abbrev>/            # Python package — renamed by init_project.py
+├── pecdr/               # Python package — shared utilities
 │   └── paths.py         # Centralized path config
-├── pipeline/            # Pipeline scripts
-│   ├── 01_download_*    # Data acquisition
-│   └── 02_analyse_*     # Analysis → notebook
+├── pipeline/            # Numbered pipeline scripts (data acquisition + analysis)
 ├── book/                # MyST book source
-│   ├── notebooks/       # Executed notebooks (Snakemake output)
-│   ├── markdown/        # Static content
+│   ├── notebooks/       # Executed notebooks (DVC output, tracked in git)
+│   ├── markdown/        # Static content, incl. the project introduction
 │   └── myst.yml         # TOC and site settings
 ├── data/                # Git-ignored data (cached by DVC)
 ├── output/images/       # Figures (tracked in git)
@@ -87,8 +62,9 @@ project-root/
 └── contribution_conventions.md   # Detailed conventions for contributors/AI
 ```
 
-See [contribution_conventions.md](contribution_conventions.md) for full details on
-adding pipeline stages, writing analysis scripts, and DVC usage.
+See [contribution_conventions.md](contribution_conventions.md) for full
+details on adding pipeline stages, writing analysis scripts, and DVC
+usage.
 
 ## Common DVC commands
 
@@ -100,3 +76,9 @@ adding pipeline stages, writing analysis scripts, and DVC usage.
 | `dvc repro <stage>` | Build one specific stage (and its dependencies) |
 | `dvc repro --force` | Re-run everything unconditionally |
 | `dvc dag` | Print the pipeline DAG |
+
+Prefer `dvc commit -f <stage>` over `dvc repro` when a stage's output was
+already produced out-of-band (e.g. run manually) — `dvc repro` walks the
+*entire* upstream graph and will silently re-run any stage missing from
+`dvc.lock`, which can mean re-running an expensive upstream computation
+just to refresh a cheap downstream one.

@@ -13,7 +13,7 @@ itself — see [How this project fits the wider goal](#project-fit) below.
 
 ## Current status: how well does each replication work?
 
-Both workstreams are checked the same way in the end: weight a modeled
+All three workstreams are checked the same way in the end: weight a modeled
 capacity factor up to a national figure using MaStR's own time-varying
 installed capacity, then compare against SMARD's actual net generation
 over the full 2019-2025 backtest (61,368 hours). Three points of
@@ -25,6 +25,7 @@ this project started from, and this project's own best replication.
 | Workstream | PECD official × MaStR | Naive physics baseline | This project's own replication |
 |---|---|---|---|
 | **Wind onshore** | MAE 0.029, corr 0.985 | MAE 0.089, corr 0.931 | **MAE 0.065, corr 0.983** |
+| **Wind offshore** | MAE 0.094, corr 0.902 | MAE 0.133, corr 0.882 | **MAE 0.128, corr 0.916** |
 | **Solar PV** | MAE 0.016, corr 0.981 | MAE 0.057, corr 0.926 | **MAE 0.046, corr 0.937** |
 
 **Wind is essentially converged**: this project's full replication
@@ -34,6 +35,19 @@ under PECD's own 0.985, and far past the naive baseline's 0.931. The
 remaining open item is a systematic high-wind over-estimate, most likely
 from the wake-effect/farm-layout modeling this project deliberately
 doesn't attempt (see the roadmap below).
+
+**Wind offshore reaches the best correlation of the three (0.916), but a
+larger bias than either other approach**: the same per-plant chain as
+onshore, adapted for two offshore-specific findings (GWA2's
+bias-correction reference barely reaches past ~20km offshore; the shared
+storm-shutdown model over-derates in wind speeds offshore sees regularly
+but onshore rarely does — see the section below). The replication's
+correlation edges out even PECD's own official product (0.916 vs. 0.902),
+but its bias (+0.108) is about 50% larger than PECD's own (+0.073) and the
+naive baseline's (+0.071), which now come out statistically close to each
+other — against real SMARD generation, most likely unmodeled offshore
+curtailment from delayed grid
+connections, a well-documented real-world issue neither model attempts.
 
 **Solar has closed much of the gap but not all of it**: swapping in
 PECD's fully documented PV conversion chain (Skartveit-Olseth
@@ -233,6 +247,112 @@ methodology), curtailment, outages, and behind-the-meter self-consumption
 — none of these have a ground-truth series to check against, which is
 exactly why they're absent from every approach compared here, not only
 this project's.
+
+## Wind offshore replication
+
+Same ladder as onshore (per-plant power curves from MaStR, PECD's alpha
+grid for hub-height extrapolation, checked against PECD's own zone product
+then against SMARD's actual `wind_offshore` generation), but two of
+onshore's steps needed a genuine methodology change rather than a
+copy-paste, both found by checking intermediate results against real
+numbers rather than assumed to transfer directly from onshore:
+
+- **GWA2 barely covers the German offshore fleet.** GWA's own downscaling
+  (WAsP) explicitly excludes "offshore areas beyond 20 km" (per the PUG).
+  Checked against MaStR's actual offshore turbine coordinates: **91% of
+  installed German offshore capacity** sits at grid cells with no GWA2
+  delta-correction factor at all. Cross-checked against PECD's own
+  downloaded bias-adjusted wind-speed product vs. raw ERA5 at those same
+  deep-sea cells: the ratio is ~1.0000 beyond ~20km from shore (real
+  correction only applies near-shore) — PECD's own product evidently
+  leaves deep-offshore wind speed uncorrected too. The replication matches
+  that: apply the GWA delta where available, leave raw ERA5 speed
+  unmodified elsewhere.
+- **The shared storm-shutdown model over-derates offshore.** Its linear
+  ramp (20→25 m/s) is tuned against onshore, where hub-height wind speed
+  rarely exceeds 20 m/s; offshore it regularly does (checked: ~3.8% of
+  hours at a representative North Sea cell across 2022 fall in that 20-25
+  m/s band, vs. essentially never onshore). Applied as written it derated
+  a January storm snapshot to a third of PECD's own product's output at
+  that hour, even though the *pre*-shutdown power curve alone already
+  tracked PECD's product closely (0.91 vs. 0.86) — same pattern as solar's
+  inverter-loss polynomial: implemented elsewhere
+  (`pecdr/shutdown.py`), demonstrably doing net harm here, so left out of
+  the offshore chain with the discrepancy documented rather than patched
+  with an unvalidated offshore-specific threshold.
+
+Offshore turbine technical detail in MaStR is markedly more complete than
+onshore's — 100% of active offshore capacity has a known turbine model
+(vs. ~44-56% onshore) and 97.6% a known hub height — though only ~2.5% of
+that capacity matches an exact public OEDB power curve (vs. ~44% onshore,
+most offshore models being larger/newer than the library covers), so the
+generic specific-power-parametrized fallback curve carries most of the
+offshore fleet.
+
+Against SMARD's actual generation, this project's replication reaches the
+**best correlation of the three** (0.916, edging out even PECD's own
+official product's 0.902) but with a larger absolute bias (+0.108 vs.
+PECD's +0.073 and the naive baseline's +0.071) — it tracks the true
+up-and-down weather pattern slightly better than PECD's own product does,
+but systematically overestimates the level more. Plausible drivers, none
+isolated yet: German offshore wind has
+well-documented real-world curtailment from delayed grid connections
+(farms commissioned before their export cable is ready), which neither
+this replication nor PECD's own product attempts to model — the same
+"no ground truth for curtailment" gap flagged for onshore above, likely
+larger here since offshore grid-connection delays are a well-known,
+material issue in the German market.
+
+**Is the bias just our own capacity accounting being wrong, rather than
+curtailment?** The "PECD official x MaStR" comparison above leans on this
+project's own MaStR-derived monthly PEOF-zone capacity panel for weighting
+on *both* sides — so a wrong capacity vector could manufacture that same
+bias with no real curtailment involved. Checked directly: solving for the
+per-zone capacity vector that best reconstructs SMARD's actual generation
+from PECD's own zone capacity-factor shapes (non-negative, monotonically
+non-decreasing, via NNLS on a reparametrized design matrix — see notebook
+35) drives the bias to roughly zero (-0.03 vs. MaStR weights' +0.16 in MW
+terms, same 3-zone basis), confirming a real chunk of the bias *is*
+attributable to our own capacity numbers, not to PECD or curtailment.
+But correlation barely moves (0.909 vs. 0.898) — reweighting capacity
+fixes the *level*, not the *shape*. Since the fitted vector is by
+construction the best any monotonic capacity story can do, that remaining
+gap can't be closed by better fleet data — it needs something the capacity
+vector structurally can't represent: curtailment or another dynamic
+effect. The fitted national capacity trajectory is also strikingly
+different in *shape* from MaStR's: essentially flat 2020-2024 while
+MaStR's nameplate figure climbs steadily, only converging in 2025 — the
+same window Germany's offshore grid connections
+(BorWin5/DolWin6-era converter platforms) were catching up with the
+capacity build-out, consistent with, though not proof of, a growing
+grid-bottleneck story.
+
+One more data-quality finding along the way, worth flagging on its own:
+**3 of PECD's 6 PEOF zones (`DE013_OFF`/`DE014_OFF`/`DE015_OFF`) are 100%
+`NaN`** in PECD's own product across the entire 2015-2025 file — PECD
+apparently never modeled them. `DE013_OFF` still carries real MaStR
+capacity (up to ~300 MW), which was silently diluting the "PECD official x
+MaStR" capacity-weighted denominator above with dead-weight capacity that
+contributes nothing to the numerator — a small (~1.5-3% of national
+capacity) but real effect, separate from the capacity-vector question
+above. Fixed in notebook 34 by restricting that comparison to the zones
+PECD actually has data for; the numbers already quoted throughout this
+page reflect the fix. Removing the dilution moved "PECD official x MaStR"
+bias *up* (+0.060 → +0.073), not down — the dilution had been partially
+masking, not inflating, the true bias.
+
+## Roadmap: wind offshore notebooks
+
+| Notebook | What it shows |
+|---|---|
+| [31: PEOF zone replication](../notebooks/31_replicate_wind_offshore_capacity_factor.ipynb) | Two-snapshot check against PECD's own PEOF zone product; surfaces and resolves the GWA2 coverage gap and storm-shutdown over-derate above (MAE 0.046 / corr 0.989 on the storm snapshot once resolved, vs. 0.28 / 0.71 before) |
+| [33: Full-year validation](../notebooks/33_analyse_wind_offshore_full_year.ipynb) | Same comparison across all 61,368 hours of 2019-2025 — MAE 0.059, corr 0.986 vs. PECD's own PEOF product, with a persistent +0.043 mean bias |
+| [34: Comparing all approaches](../notebooks/34_compare_wind_offshore_approaches.ipynb) | Brings in SMARD's actual net generation; this project's replication reaches the best correlation of the three (0.916) but the largest absolute bias, likely reflecting unmodeled offshore curtailment. Also fixes a data-quality issue: 3 of PECD's 6 PEOF zones are 100% unmodeled by PECD, which was silently diluting approach 1's capacity-weighted denominator |
+| [35: Fitting optimal capacity weights](../notebooks/35_fit_wind_offshore_capacity_weights.ipynb) | Tests whether the bias is just wrong fleet numbers: an NNLS-fit optimal capacity vector zeroes out the bias but barely improves correlation — capacity accounting explains the *level* gap, not the *shape* gap, pointing at curtailment (or another dynamic effect) for what's left |
+
+Deliberately out of scope for this pass, same incremental spirit as
+solar's own build-out: bias-driver analysis (by year/month/hour/cf-level)
+and walk-forward bias correction, onshore's steps 22/23.
 
 ## Solar PV replication
 

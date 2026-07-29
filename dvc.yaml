@@ -328,6 +328,150 @@ stages:
       - output/images/12_approaches_vs_smard.png:
           cache: false
 
+  build_wind_offshore_plant_panel:
+    cmd: uv run python pipeline/30_build_wind_offshore_plant_panel.py
+    deps:
+      - pipeline/30_build_wind_offshore_plant_panel.py
+      - pecdr/plant_panel.py
+      - pecdr/domain.py
+      - pecdr/grid.py
+      - pecdr/peon_zones.py
+      - data/downloads/pecd/peof_region_mask.zip
+    outs:
+      - data/processed/wind_offshore_plant_panel.parquet
+      - data/processed/wind_offshore_plant_panel_2019.parquet
+      - data/processed/wind_offshore_plant_panel_2020.parquet
+      - data/processed/wind_offshore_plant_panel_2021.parquet
+      - data/processed/wind_offshore_plant_panel_2022.parquet
+      - data/processed/wind_offshore_plant_panel_2023.parquet
+      - data/processed/wind_offshore_plant_panel_2024.parquet
+      - data/processed/wind_offshore_plant_panel_2025.parquet
+
+  replicate_wind_offshore_capacity_factor:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/31_replicate_wind_offshore_capacity_factor.ipynb
+      pipeline/31_replicate_wind_offshore_capacity_factor.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/31_replicate_wind_offshore_capacity_factor.ipynb
+    deps:
+      - pipeline/31_replicate_wind_offshore_capacity_factor.py
+      - pecdr/hub_height.py
+      - pecdr/power_curve.py
+      - pecdr/plant_model.py
+      - pecdr/wind_bias.py
+      - pecdr/pecd_io.py
+      - pecdr/domain.py
+      - data/processed/wind_offshore_plant_panel.parquet
+      - data/downloads/pecd/climatology_era5_100m.zip
+      - data/downloads/pecd/climatology_gwa2_100m.zip
+      - data/downloads/pecd/power_law_coefficient.zip
+      - data/downloads/era5/era5_wind_snapshots.nc
+      - data/processed/pecd_wind_offshore_capacity_factors.parquet
+    outs:
+      - book/notebooks/31_replicate_wind_offshore_capacity_factor.ipynb:
+          cache: false
+      - output/images/31_peof_zone_comparison.png:
+          cache: false
+      - output/images/31_national_aggregate_comparison.png:
+          cache: false
+
+  compute_wind_offshore_full_year:
+    cmd: uv run python pipeline/32_compute_wind_offshore_full_year.py
+    deps:
+      - pipeline/32_compute_wind_offshore_full_year.py
+      - pecdr/full_year.py
+      - pecdr/plant_model.py
+      - pecdr/domain.py
+      - data/processed/wind_offshore_plant_panel_2019.parquet
+      - data/processed/wind_offshore_plant_panel_2020.parquet
+      - data/processed/wind_offshore_plant_panel_2021.parquet
+      - data/processed/wind_offshore_plant_panel_2022.parquet
+      - data/processed/wind_offshore_plant_panel_2023.parquet
+      - data/processed/wind_offshore_plant_panel_2024.parquet
+      - data/processed/wind_offshore_plant_panel_2025.parquet
+      - data/downloads/pecd/climatology_era5_100m.zip
+      - data/downloads/pecd/climatology_gwa2_100m.zip
+      - data/downloads/pecd/power_law_coefficient.zip
+      - data/downloads/era5
+    outs:
+      - data/processed/wind_offshore_full_year_cf.parquet
+
+  analyse_wind_offshore_full_year:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/33_analyse_wind_offshore_full_year.ipynb
+      pipeline/33_analyse_wind_offshore_full_year.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/33_analyse_wind_offshore_full_year.ipynb
+    deps:
+      - pipeline/33_analyse_wind_offshore_full_year.py
+      - pecdr/domain.py
+      - data/processed/wind_offshore_full_year_cf.parquet
+      - data/processed/wind_offshore_plant_panel_2019.parquet
+      - data/processed/wind_offshore_plant_panel_2020.parquet
+      - data/processed/wind_offshore_plant_panel_2021.parquet
+      - data/processed/wind_offshore_plant_panel_2022.parquet
+      - data/processed/wind_offshore_plant_panel_2023.parquet
+      - data/processed/wind_offshore_plant_panel_2024.parquet
+      - data/processed/wind_offshore_plant_panel_2025.parquet
+      - data/processed/pecd_wind_offshore_capacity_factors.parquet
+    outs:
+      - book/notebooks/33_analyse_wind_offshore_full_year.ipynb:
+          cache: false
+      - output/images/33_full_year_timeseries.png:
+          cache: false
+      - output/images/33_bias_vs_cf_level.png:
+          cache: false
+
+  compare_wind_offshore_approaches:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/34_compare_wind_offshore_approaches.ipynb
+      pipeline/34_compare_wind_offshore_approaches.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/34_compare_wind_offshore_approaches.ipynb
+    deps:
+      - pipeline/34_compare_wind_offshore_approaches.py
+      - pecdr/capacity_weighting.py
+      - pecdr/domain.py
+      - data/processed/wind_offshore_full_year_cf.parquet
+      - data/processed/pecd_wind_offshore_capacity_factors.parquet
+      - data/processed/own_wind_offshore_capacity_factors.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/34_compare_wind_offshore_approaches.ipynb:
+          cache: false
+      - output/images/34_all_approaches_timeseries.png:
+          cache: false
+      - output/images/34_approaches_vs_smard.png:
+          cache: false
+
+  fit_wind_offshore_capacity_weights:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/35_fit_wind_offshore_capacity_weights.ipynb
+      pipeline/35_fit_wind_offshore_capacity_weights.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/35_fit_wind_offshore_capacity_weights.ipynb
+    deps:
+      - pipeline/35_fit_wind_offshore_capacity_weights.py
+      - pecdr/capacity_weighting.py
+      - pecdr/domain.py
+      - data/processed/pecd_wind_offshore_capacity_factors.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/35_fit_wind_offshore_capacity_weights.ipynb:
+          cache: false
+      - output/images/35_fitted_capacity_trajectories.png:
+          cache: false
+      - output/images/35_fit_quality_vs_smard.png:
+          cache: false
+
   analyse_bias_drivers:
     cmd: >-
       MPLBACKEND=Agg uv run jupytext --to notebook --execute

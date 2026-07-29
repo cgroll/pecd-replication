@@ -20,18 +20,25 @@ from pecdr.shutdown import apply_shutdown_derate
 from pecdr.wind_bias import single_data_var
 
 
-def precompute_plant_static(plants: pd.DataFrame, delta_100: xr.DataArray, alpha_ds: xr.Dataset) -> tuple[np.ndarray, np.ndarray]:
+def precompute_plant_static(plants: pd.DataFrame, delta_100: xr.DataArray, alpha_ds: xr.Dataset, bias_fill_value: float | None = None) -> tuple[np.ndarray, np.ndarray]:
     """Per-plant, time-invariant quantities needed by the monthly loop.
 
     Returns `(delta_at_plant, alpha_lookup)`:
     - `delta_at_plant`: (n_plants,) Delta Adjustment factor at each plant's grid cell.
     - `alpha_lookup`: (12, 24, n_plants) alpha value per (month, hour-of-day, plant),
       built once from the 288-step climatological grid rather than re-selected per hour.
+
+    `bias_fill_value`, if given, replaces NaN deltas (plants with no GWA2
+    coverage -- see `pecdr.wind_bias.apply_delta_correction`'s docstring for
+    why this matters offshore) before returning.
     """
     plant_lat = xr.DataArray(plants["grid_lat"].to_numpy(), dims="plant")
     plant_lon = xr.DataArray(plants["grid_lon"].to_numpy(), dims="plant")
 
-    delta_at_plant = delta_100.sel(latitude=plant_lat, longitude=plant_lon, method="nearest").to_numpy()
+    delta_at_plant = delta_100.sel(latitude=plant_lat, longitude=plant_lon, method="nearest")
+    if bias_fill_value is not None:
+        delta_at_plant = delta_at_plant.fillna(bias_fill_value)
+    delta_at_plant = delta_at_plant.to_numpy()
 
     alpha_da = single_data_var(alpha_ds)
     alpha_at_plant = alpha_da.sel(latitude=plant_lat, longitude=plant_lon, method="nearest")  # (time=288, plant)
@@ -44,12 +51,18 @@ def precompute_plant_static(plants: pd.DataFrame, delta_100: xr.DataArray, alpha
     return delta_at_plant, alpha_lookup
 
 
-def compute_month(era5_file, plants: pd.DataFrame, curve_cache: dict, delta_at_plant: np.ndarray, alpha_lookup: np.ndarray) -> pd.DataFrame:
+def compute_month(era5_file, plants: pd.DataFrame, curve_cache: dict, delta_at_plant: np.ndarray, alpha_lookup: np.ndarray, apply_shutdown: bool = True) -> pd.DataFrame:
     """Per-plant capacity factor for every hour in one ERA5 month file.
 
     Returns a (time x plant) DataFrame -- one row per hour, one column per
-    plant (`unit_id`), values are the final (post-shutdown, post-loss)
-    capacity factor.
+    plant (`unit_id`), values are the final (post-shutdown if `apply_shutdown`,
+    post-loss) capacity factor.
+
+    `apply_shutdown=False` skips `pecdr.shutdown`'s storm-derate ramp --
+    needed offshore, where it's tuned against onshore's rarely-above-20-m/s
+    wind and badly over-derates otherwise (see pipeline/31's docstring for
+    the empirical finding: pre-shutdown CF already tracks PECD's own
+    product closely, the ramp does net harm there).
     """
     ds = xr.open_dataset(era5_file)
     lat_idx = nearest_grid_index(plants["grid_lat"].to_numpy(), ds["latitude"].values)
@@ -74,22 +87,24 @@ def compute_month(era5_file, plants: pd.DataFrame, curve_cache: dict, delta_at_p
     for h in range(n_hours):
         cf[h] = plant_capacity_factor(v_hub[h], matched_type, rated_ws, curve_cache)
 
-    cf = apply_shutdown_derate(cf, v_hub)
+    if apply_shutdown:
+        cf = apply_shutdown_derate(cf, v_hub)
     cf = cf * (1 - OTHER_LOSSES_FRACTION)
 
     return pd.DataFrame(cf, index=pd.DatetimeIndex(ds["time"].values, name="timestamp"), columns=plants["unit_id"])
 
 
-def aggregate_to_zone_and_national(cf_df: pd.DataFrame, plants: pd.DataFrame) -> pd.DataFrame:
-    """Capacity-weighted zone (PEON) and national capacity factor, per hour.
+def aggregate_to_zone_and_national(cf_df: pd.DataFrame, plants: pd.DataFrame, zone_col: str = "peon_zone") -> pd.DataFrame:
+    """Capacity-weighted zone (PEON/PEOF) and national capacity factor, per hour.
 
     `cf_df` is (time x plant) as returned by `compute_month`. Returns one
-    row per hour with columns `national` and one per PEON zone.
+    row per hour with columns `national` and one per zone in `zone_col`
+    (`peon_zone` for onshore, `peof_zone` for offshore).
     """
     capacity = plants.set_index("unit_id")["capacity_mw"].reindex(cf_df.columns)
     power = cf_df * capacity.to_numpy()[None, :]
 
-    zone_indicator = pd.get_dummies(plants.set_index("unit_id")["peon_zone"]).reindex(cf_df.columns).fillna(0)
+    zone_indicator = pd.get_dummies(plants.set_index("unit_id")[zone_col]).reindex(cf_df.columns).fillna(0)
     zone_capacity = (zone_indicator.to_numpy() * capacity.to_numpy()[:, None]).sum(axis=0)
     zone_power = power.to_numpy() @ zone_indicator.to_numpy()
     zone_cf = pd.DataFrame(zone_power / zone_capacity[None, :], index=cf_df.index, columns=zone_indicator.columns)

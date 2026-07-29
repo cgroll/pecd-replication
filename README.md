@@ -14,18 +14,22 @@ by [DVC](https://dvc.org/); dependencies by [uv](https://docs.astral.sh/uv/).
 
 ## Current status
 
-Both workstreams are checked against SMARD's actual net generation over
-the full 2019-2025 backtest, alongside PECD's own official product and
+All three workstreams are checked against SMARD's actual net generation
+over the full 2019-2025 backtest, alongside PECD's own official product and
 this project's original naive physics baseline:
 
 | Workstream | PECD official × MaStR | Naive physics baseline | This project's own replication |
 |---|---|---|---|
 | Wind onshore | MAE 0.029, corr 0.985 | MAE 0.089, corr 0.931 | **MAE 0.065, corr 0.983** |
+| Wind offshore | MAE 0.094, corr 0.902 | MAE 0.133, corr 0.882 | **MAE 0.128, corr 0.916** |
 | Solar PV | MAE 0.016, corr 0.981 | MAE 0.057, corr 0.926 | **MAE 0.046, corr 0.937** |
 
-Wind's own replication is essentially converged with PECD's own accuracy;
-solar has closed much of the gap from the naive baseline but still has a
-meaningfully larger unresolved gap than wind. See
+Wind onshore's own replication is essentially converged with PECD's own
+accuracy; wind offshore reaches the best correlation of the three but a
+larger bias than PECD's own product, likely reflecting unmodeled offshore
+curtailment; solar has closed much of the gap from the naive baseline but
+still has a meaningfully larger unresolved gap than either wind
+workstream. See
 [Current status](book/markdown/index.md#current-status-how-well-does-each-replication-work)
 in the book for what's driving the remaining gaps and what's still open.
 

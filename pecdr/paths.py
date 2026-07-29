@@ -468,6 +468,35 @@ class ProjPaths:
         """
         return self.processed_data_path / f"wind_onshore_plant_panel_{year}.parquet"
 
+    @property
+    def wind_offshore_plant_panel_file(self) -> Path:
+        """Same as `wind_onshore_plant_panel_file`, for the offshore fleet
+        (`peof_zone` column instead of `peon_zone`). See
+        pecdr/plant_panel.py and pipeline/30_build_wind_offshore_plant_panel.py.
+        """
+        return self.processed_data_path / "wind_offshore_plant_panel.parquet"
+
+    def wind_offshore_plant_panel_by_year_file(self, year: str) -> Path:
+        """Same as `wind_onshore_plant_panel_by_year_file`, for the offshore fleet."""
+        return self.processed_data_path / f"wind_offshore_plant_panel_{year}.parquet"
+
+    @property
+    def wind_offshore_full_year_cf_file(self) -> Path:
+        """Same as `wind_onshore_full_year_cf_file`, for offshore wind -- columns
+        are the 6 PEOF zones + `national`. See
+        pipeline/32_compute_wind_offshore_full_year.py.
+        """
+        return self.processed_data_path / "wind_offshore_full_year_cf.parquet"
+
+    @property
+    def mastr_capacity_by_peof_month_file(self) -> Path:
+        """Monthly (time-varying) offshore wind capacity by PEOF zone x month,
+        same shape as `mastr_capacity_by_peon_month_file` (region_code/month/
+        capacity_mw). See
+        ~/research/mastr-power-capacities-germany/pipeline/07_build_wind_zone_panel.py.
+        """
+        return self.mastr_project_path / "data" / "processed" / "capacity_by_peof_month.parquet"
+
     # ------------------------------------------------------------------ #
     # Helpers                                                              #
     # ------------------------------------------------------------------ #

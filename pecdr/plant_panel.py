@@ -1,11 +1,12 @@
-"""Build the onshore wind plant panel, optionally as of a given date.
+"""Build the wind plant panel (onshore or offshore), optionally as of a given date.
 
-Shared by `pipeline/08_build_wind_onshore_plant_panel.py`, which uses this
+Shared by `pipeline/08_build_wind_onshore_plant_panel.py` (onshore) and
+`pipeline/30_build_wind_offshore_plant_panel.py` (offshore), which use this
 both for today's "active now" snapshot (`as_of=None`, used by the
-two-snapshot check in `pipeline/09`) and for a series of year-start
-snapshots (`as_of=<year>-01-01`, used by the full-year backtest in
-`pipeline/10` to avoid applying today's larger, newer fleet retroactively
-to earlier years' weather).
+two-snapshot checks in `pipeline/09`/`pipeline/31`) and for a series of
+year-start snapshots (`as_of=<year>-01-01`, used by the full-year backtests
+in `pipeline/10`/`pipeline/32` to avoid applying today's larger, newer
+fleet retroactively to earlier years' weather).
 """
 
 import pandas as pd
@@ -16,13 +17,18 @@ from pecdr.pecd_io import open_single_zipped_netcdf
 from pecdr.paths import ProjPaths
 
 
-def build_plant_panel(paths: ProjPaths, as_of: pd.Timestamp | None = None) -> pd.DataFrame:
-    """Active onshore wind units, one row per unit, as of `as_of` (or "today" if None).
+def build_plant_panel(paths: ProjPaths, as_of: pd.Timestamp | None = None, offshore: bool = False) -> pd.DataFrame:
+    """Active wind units, one row per unit, as of `as_of` (or "today" if None).
 
     "Today" (`as_of=None`) matches units with no `final_shutdown_date` yet,
     same as this project's original snapshot. Given an explicit `as_of`,
     a unit counts as active if it was already commissioned by then and
     either never shut down or shut down after `as_of`.
+
+    `offshore=True` selects MaStR's offshore fleet (`region_code` starting
+    "DEZZ") instead of onshore, snaps to PECD's PEOF region mask instead of
+    PEON, and names the assigned-zone column `peof_zone` instead of
+    `peon_zone`.
     """
     events = pd.read_parquet(
         paths.mastr_capacity_events_file,
@@ -37,12 +43,15 @@ def build_plant_panel(paths: ProjPaths, as_of: pd.Timestamp | None = None) -> pd
     else:
         is_active = (wind["commissioning_date"] <= as_of) & (wind["final_shutdown_date"].isna() | (wind["final_shutdown_date"] > as_of))
 
-    onshore = wind[~is_offshore & is_active & has_coords].copy()
+    fleet_filter = is_offshore if offshore else ~is_offshore
+    fleet = wind[fleet_filter & is_active & has_coords].copy()
 
     detail = pd.read_parquet(paths.mastr_wind_technical_detail_file)
-    plants = onshore.merge(detail, on="unit_id", how="left")
+    plants = fleet.merge(detail, on="unit_id", how="left")
 
-    mask_ds = open_single_zipped_netcdf(paths.peon_mask_zip)
+    mask_zip = paths.peof_mask_zip if offshore else paths.peon_mask_zip
+    zone_col = "peof_zone" if offshore else "peon_zone"
+    mask_ds = open_single_zipped_netcdf(mask_zip)
     lats, lons = mask_ds["latitude"].values, mask_ds["longitude"].values
 
     lat_idx = nearest_grid_index(plants["latitude"].to_numpy(), lats)
@@ -50,8 +59,8 @@ def build_plant_panel(paths: ProjPaths, as_of: pd.Timestamp | None = None) -> pd
     plants["grid_lat"] = lats[lat_idx]
     plants["grid_lon"] = lons[lon_idx]
 
-    plants["peon_zone"] = assign_dominant_zone(plants, mask_ds["mask"], zone_prefix="DE")
+    plants[zone_col] = assign_dominant_zone(plants, mask_ds["mask"], zone_prefix="DE")
 
     return plants[
-        ["unit_id", "capacity_mw", "hub_height_m", "rotor_diameter_m", "manufacturer", "turbine_model", "longitude", "latitude", "grid_lat", "grid_lon", "peon_zone"]
+        ["unit_id", "capacity_mw", "hub_height_m", "rotor_diameter_m", "manufacturer", "turbine_model", "longitude", "latitude", "grid_lat", "grid_lon", zone_col]
     ]

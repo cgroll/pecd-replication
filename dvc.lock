@@ -812,8 +812,8 @@ stages:
       size: 51558551
     - path: pecdr/era5.py
       hash: md5
-      md5: ffa79d2122af6f798271055b31f0f9be
-      size: 9151
+      md5: 4b7ac0e9547182fcad710ee8042ae6ed
+      size: 9891
     - path: pecdr/pecd_io.py
       hash: md5
       md5: d319205cf33c103ce7e73bf426174d5a
@@ -824,8 +824,8 @@ stages:
       size: 5396
     - path: pecdr/wind_bias.py
       hash: md5
-      md5: 0871c55e04d9d30510f94b1eb9fb9f14
-      size: 3715
+      md5: 6078c2006c5cbde710ed6c971f7468dd
+      size: 4533
     - path: pipeline/20_process_era5_capacity_factors.py
       hash: md5
       md5: ccdc49d15917aa32e876e77cba7d9bae
@@ -1266,3 +1266,358 @@ stages:
       hash: md5
       md5: b84a3519e291615c7c36fe8a8388c18f
       size: 667232
+  build_wind_offshore_plant_panel:
+    cmd: uv run python pipeline/30_build_wind_offshore_plant_panel.py
+    deps:
+    - path: data/downloads/pecd/peof_region_mask.zip
+      hash: md5
+      md5: 120ebb12bcbe52d452a22735b7f617a4
+      size: 81690
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/grid.py
+      hash: md5
+      md5: dba5aa98b94cdd51f5148c3d60059f50
+      size: 729
+    - path: pecdr/peon_zones.py
+      hash: md5
+      md5: ad2b36468490f1022015bdae28d916a9
+      size: 3305
+    - path: pecdr/plant_panel.py
+      hash: md5
+      md5: af30be892a9152beef1c10f97d8b943d
+      size: 3138
+    - path: pipeline/30_build_wind_offshore_plant_panel.py
+      hash: md5
+      md5: 740cea5feb3d5a828d7cb88c75033e45
+      size: 1591
+    outs:
+    - path: data/processed/wind_offshore_plant_panel.parquet
+      hash: md5
+      md5: 2783fb3734f5f699106a32d60e9df6e3
+      size: 95604
+    - path: data/processed/wind_offshore_plant_panel_2019.parquet
+      hash: md5
+      md5: 007ca403cc1770b95775031e20efeb5c
+      size: 84433
+    - path: data/processed/wind_offshore_plant_panel_2020.parquet
+      hash: md5
+      md5: 71ad111b715a51eafe8572397ac9838b
+      size: 88629
+    - path: data/processed/wind_offshore_plant_panel_2021.parquet
+      hash: md5
+      md5: 02e36b882abb45205bf86e11bf5b68cc
+      size: 89410
+    - path: data/processed/wind_offshore_plant_panel_2022.parquet
+      hash: md5
+      md5: 02e36b882abb45205bf86e11bf5b68cc
+      size: 89410
+    - path: data/processed/wind_offshore_plant_panel_2023.parquet
+      hash: md5
+      md5: 94c230ca3ed23b662e7ae354d41a85b9
+      size: 90290
+    - path: data/processed/wind_offshore_plant_panel_2024.parquet
+      hash: md5
+      md5: b348c12c70e6abf527073757e4356c3a
+      size: 91008
+    - path: data/processed/wind_offshore_plant_panel_2025.parquet
+      hash: md5
+      md5: 25193367d3c7b900eedcefbe6dacb18b
+      size: 92681
+  compute_wind_offshore_full_year:
+    cmd: uv run python pipeline/32_compute_wind_offshore_full_year.py
+    deps:
+    - path: data/downloads/era5
+      hash: md5
+      md5: b0707430bfbb6d4bd3a372156317563a.dir
+      size: 1383681994
+      nfiles: 91
+    - path: data/downloads/pecd/climatology_era5_100m.zip
+      hash: md5
+      md5: 00fe35455e52c9fb719626deed072fe5
+      size: 13435
+    - path: data/downloads/pecd/climatology_gwa2_100m.zip
+      hash: md5
+      md5: 2b7c0d311b70d237fc20bd92f9119bd4
+      size: 15403
+    - path: data/downloads/pecd/power_law_coefficient.zip
+      hash: md5
+      md5: 273138d2210da18aa6ed0cd11c96454a
+      size: 31829471
+    - path: data/processed/wind_offshore_plant_panel_2019.parquet
+      hash: md5
+      md5: 007ca403cc1770b95775031e20efeb5c
+      size: 84433
+    - path: data/processed/wind_offshore_plant_panel_2020.parquet
+      hash: md5
+      md5: 71ad111b715a51eafe8572397ac9838b
+      size: 88629
+    - path: data/processed/wind_offshore_plant_panel_2021.parquet
+      hash: md5
+      md5: 02e36b882abb45205bf86e11bf5b68cc
+      size: 89410
+    - path: data/processed/wind_offshore_plant_panel_2022.parquet
+      hash: md5
+      md5: 02e36b882abb45205bf86e11bf5b68cc
+      size: 89410
+    - path: data/processed/wind_offshore_plant_panel_2023.parquet
+      hash: md5
+      md5: 94c230ca3ed23b662e7ae354d41a85b9
+      size: 90290
+    - path: data/processed/wind_offshore_plant_panel_2024.parquet
+      hash: md5
+      md5: b348c12c70e6abf527073757e4356c3a
+      size: 91008
+    - path: data/processed/wind_offshore_plant_panel_2025.parquet
+      hash: md5
+      md5: 25193367d3c7b900eedcefbe6dacb18b
+      size: 92681
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/full_year.py
+      hash: md5
+      md5: 64903830b091afb4b9ba702de551351d
+      size: 5599
+    - path: pecdr/plant_model.py
+      hash: md5
+      md5: db512831f07779eab963286aa1121c20
+      size: 2395
+    - path: pipeline/32_compute_wind_offshore_full_year.py
+      hash: md5
+      md5: ec650539764d044c98c2416e50bd3426
+      size: 3360
+    outs:
+    - path: data/processed/wind_offshore_full_year_cf.parquet
+      hash: md5
+      md5: 385ff4fcdf7e33a312b9bf7325067fd4
+      size: 3065696
+  analyse_wind_offshore_full_year:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/33_analyse_wind_offshore_full_year.ipynb 
+      pipeline/33_analyse_wind_offshore_full_year.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/33_analyse_wind_offshore_full_year.ipynb
+    deps:
+    - path: data/processed/pecd_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: fc0302a6df4558f45f41a11788b71060
+      size: 2929080
+    - path: data/processed/wind_offshore_full_year_cf.parquet
+      hash: md5
+      md5: 385ff4fcdf7e33a312b9bf7325067fd4
+      size: 3065696
+    - path: data/processed/wind_offshore_plant_panel_2019.parquet
+      hash: md5
+      md5: 007ca403cc1770b95775031e20efeb5c
+      size: 84433
+    - path: data/processed/wind_offshore_plant_panel_2020.parquet
+      hash: md5
+      md5: 71ad111b715a51eafe8572397ac9838b
+      size: 88629
+    - path: data/processed/wind_offshore_plant_panel_2021.parquet
+      hash: md5
+      md5: 02e36b882abb45205bf86e11bf5b68cc
+      size: 89410
+    - path: data/processed/wind_offshore_plant_panel_2022.parquet
+      hash: md5
+      md5: 02e36b882abb45205bf86e11bf5b68cc
+      size: 89410
+    - path: data/processed/wind_offshore_plant_panel_2023.parquet
+      hash: md5
+      md5: 94c230ca3ed23b662e7ae354d41a85b9
+      size: 90290
+    - path: data/processed/wind_offshore_plant_panel_2024.parquet
+      hash: md5
+      md5: b348c12c70e6abf527073757e4356c3a
+      size: 91008
+    - path: data/processed/wind_offshore_plant_panel_2025.parquet
+      hash: md5
+      md5: 25193367d3c7b900eedcefbe6dacb18b
+      size: 92681
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pipeline/33_analyse_wind_offshore_full_year.py
+      hash: md5
+      md5: 3bbebafdb86f527ddbd6b7f5e614f90d
+      size: 5067
+    outs:
+    - path: book/notebooks/33_analyse_wind_offshore_full_year.ipynb
+      hash: md5
+      md5: aca8df5ea79cf815276839c7773101a8
+      size: 17201
+    - path: output/images/33_bias_vs_cf_level.png
+      hash: md5
+      md5: 061633c460886cb8d43d486dd06cfb5c
+      size: 182525
+    - path: output/images/33_full_year_timeseries.png
+      hash: md5
+      md5: c58dccf7f0dd0f9e7e875b2bdc019202
+      size: 444179
+  compare_wind_offshore_approaches:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/34_compare_wind_offshore_approaches.ipynb 
+      pipeline/34_compare_wind_offshore_approaches.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/34_compare_wind_offshore_approaches.ipynb
+    deps:
+    - path: data/processed/own_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: 73d7b4aa4a2db95cd368d9bd24ebd111
+      size: 2595317
+    - path: data/processed/pecd_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: fc0302a6df4558f45f41a11788b71060
+      size: 2929080
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: data/processed/wind_offshore_full_year_cf.parquet
+      hash: md5
+      md5: 385ff4fcdf7e33a312b9bf7325067fd4
+      size: 3065696
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pipeline/34_compare_wind_offshore_approaches.py
+      hash: md5
+      md5: 4c0feab794f29101e41699140a8aaa93
+      size: 7844
+    outs:
+    - path: book/notebooks/34_compare_wind_offshore_approaches.ipynb
+      hash: md5
+      md5: 3668cac1bbea040d9e45e36864af96c5
+      size: 27021
+    - path: output/images/34_all_approaches_timeseries.png
+      hash: md5
+      md5: e08025493894b9a29534e4bf2c604e1f
+      size: 620429
+    - path: output/images/34_approaches_vs_smard.png
+      hash: md5
+      md5: 72457b61b766c1a16675bef010dfd971
+      size: 981806
+  replicate_wind_offshore_capacity_factor:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output 
+      book/notebooks/31_replicate_wind_offshore_capacity_factor.ipynb 
+      pipeline/31_replicate_wind_offshore_capacity_factor.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/31_replicate_wind_offshore_capacity_factor.ipynb
+    deps:
+    - path: data/downloads/era5/era5_wind_snapshots.nc
+      hash: md5
+      md5: e4fc3ef09ae73a0217e552183f095777
+      size: 98738
+    - path: data/downloads/pecd/climatology_era5_100m.zip
+      hash: md5
+      md5: 00fe35455e52c9fb719626deed072fe5
+      size: 13435
+    - path: data/downloads/pecd/climatology_gwa2_100m.zip
+      hash: md5
+      md5: 2b7c0d311b70d237fc20bd92f9119bd4
+      size: 15403
+    - path: data/downloads/pecd/power_law_coefficient.zip
+      hash: md5
+      md5: 273138d2210da18aa6ed0cd11c96454a
+      size: 31829471
+    - path: data/processed/pecd_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: fc0302a6df4558f45f41a11788b71060
+      size: 2929080
+    - path: data/processed/wind_offshore_plant_panel.parquet
+      hash: md5
+      md5: 2783fb3734f5f699106a32d60e9df6e3
+      size: 95604
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/hub_height.py
+      hash: md5
+      md5: d92123205b6c78e5127aff0b21fd5fcc
+      size: 2542
+    - path: pecdr/pecd_io.py
+      hash: md5
+      md5: d319205cf33c103ce7e73bf426174d5a
+      size: 3958
+    - path: pecdr/plant_model.py
+      hash: md5
+      md5: db512831f07779eab963286aa1121c20
+      size: 2395
+    - path: pecdr/power_curve.py
+      hash: md5
+      md5: 2d763f9056c2bd467200b23d6f71df69
+      size: 5966
+    - path: pecdr/wind_bias.py
+      hash: md5
+      md5: 6078c2006c5cbde710ed6c971f7468dd
+      size: 4533
+    - path: pipeline/31_replicate_wind_offshore_capacity_factor.py
+      hash: md5
+      md5: 7bdeac260ef6b211d10c98df48c454de
+      size: 9375
+    outs:
+    - path: book/notebooks/31_replicate_wind_offshore_capacity_factor.ipynb
+      hash: md5
+      md5: 31c31b5d18652132c505106795f4e59c
+      size: 22959
+    - path: output/images/31_national_aggregate_comparison.png
+      hash: md5
+      md5: 7d73501788c3e28d5303a413dee0004e
+      size: 44191
+    - path: output/images/31_peof_zone_comparison.png
+      hash: md5
+      md5: 37f49558e1d4f31db67e8512ba1f765b
+      size: 91690
+  fit_wind_offshore_capacity_weights:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output 
+      book/notebooks/35_fit_wind_offshore_capacity_weights.ipynb 
+      pipeline/35_fit_wind_offshore_capacity_weights.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/35_fit_wind_offshore_capacity_weights.ipynb
+    deps:
+    - path: data/processed/pecd_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: fc0302a6df4558f45f41a11788b71060
+      size: 2929080
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pipeline/35_fit_wind_offshore_capacity_weights.py
+      hash: md5
+      md5: 7b3a90614a7b82588a832c21def37021
+      size: 10261
+    outs:
+    - path: book/notebooks/35_fit_wind_offshore_capacity_weights.ipynb
+      hash: md5
+      md5: ffdd7b7518f7c95ae1357ef507a471b6
+      size: 19775
+    - path: output/images/35_fit_quality_vs_smard.png
+      hash: md5
+      md5: 17f122eb81bdcc6cb3730c2743b2d9ec
+      size: 444854
+    - path: output/images/35_fitted_capacity_trajectories.png
+      hash: md5
+      md5: 6abedebb8a077161ce3bf1b550da920e
+      size: 159132

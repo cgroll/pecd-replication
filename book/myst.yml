@@ -21,6 +21,12 @@ project:
         - file: notebooks/12_compare_all_approaches.ipynb
         - file: notebooks/22_analyse_bias_drivers.ipynb
         - file: notebooks/23_bias_correct_walk_forward.ipynb
+    - title: Wind offshore replication
+      children:
+        - file: notebooks/31_replicate_wind_offshore_capacity_factor.ipynb
+        - file: notebooks/33_analyse_wind_offshore_full_year.ipynb
+        - file: notebooks/34_compare_wind_offshore_approaches.ipynb
+        - file: notebooks/35_fit_wind_offshore_capacity_weights.ipynb
     - title: Solar PV replication
       children:
         - file: notebooks/25_compare_solar_approaches.ipynb

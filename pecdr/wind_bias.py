@@ -68,7 +68,7 @@ def restrict_to_onshore(*arrays: xr.DataArray, reference: xr.DataArray) -> list[
     return [a.where(land_mask) for a in arrays]
 
 
-def apply_delta_correction(raw_speed: xr.DataArray, delta: xr.DataArray) -> xr.DataArray:
+def apply_delta_correction(raw_speed: xr.DataArray, delta: xr.DataArray, fill_value: float | None = None) -> xr.DataArray:
     """Apply the per-cell Delta Adjustment, aligning grids by nearest lat/lon.
 
     `delta` comes from a separate CDS download (the climatology grids) that
@@ -76,6 +76,19 @@ def apply_delta_correction(raw_speed: xr.DataArray, delta: xr.DataArray) -> xr.D
     (e.g. float32 vs. float64 rounding) even though both are nominally the
     same 0.25-degree ERA5 grid -- nearest-neighbor reindexing handles this
     robustly instead of requiring exact float equality.
+
+    `fill_value`, if given, replaces NaN cells in the (aligned) delta before
+    multiplying -- needed offshore, where GWA2 (per the PUG) excludes
+    "offshore areas beyond 20 km", so ~91% of German offshore wind capacity
+    sits at cells with no delta factor at all. Checked empirically against
+    PECD's own downloaded bias-adjusted wind-speed product: beyond that
+    ~20km band its ratio to raw ERA5 is ~1.0000 (real correction only
+    applies near-shore), so `fill_value=1.0` (leave raw ERA5 unmodified)
+    replicates PECD's own apparent offshore behavior. Onshore call sites
+    leave this `None` (NaN propagates, as before -- onshore's own land
+    footprint has full GWA2 coverage).
     """
     delta_aligned = delta.reindex_like(raw_speed, method="nearest", tolerance=0.01)
+    if fill_value is not None:
+        delta_aligned = delta_aligned.fillna(fill_value)
     return raw_speed * delta_aligned

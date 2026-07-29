@@ -39,7 +39,9 @@ solar["pecd_technology"] = classify_pecd_technology(solar["installation_type"], 
 print("Capacity (MW) by PECD technology (60=industrial roof, 61=residential roof, 62=utility fixed, 63=utility tracking):")
 print(solar.groupby("pecd_technology")["capacity_mw"].sum())
 
-unit_panel = solar[["unit_id", "capacity_mw", "nuts2_region", "pecd_technology", "pv_category", "commissioning_date", "final_shutdown_date"]]
+unit_panel = solar[
+    ["unit_id", "capacity_mw", "nuts2_region", "pecd_technology", "pv_category", "main_orientation", "main_orientation_tilt_bucket", "commissioning_date", "final_shutdown_date"]
+]
 unit_panel.to_parquet(paths.solar_unit_technology_file, index=False)
 print(f"Saved unit-level panel -> {paths.solar_unit_technology_file}")
 

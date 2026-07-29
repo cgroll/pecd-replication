@@ -431,6 +431,22 @@ class ProjPaths:
         return self.processed_data_path / "wind_onshore_full_year_cf.parquet"
 
     @property
+    def own_solar_full_year_cf_file(self) -> Path:
+        """Hourly modeled NUTS2 x technology solar capacity factor, every
+        hour of every year in `pecdr.domain.FULL_YEAR_BACKTEST_YEARS`, via
+        the technology- and orientation-aware, PECD-documented physics
+        chain validated in pipeline/27 (`pecdr.solar_config_physics`) --
+        not to be confused with `own_solar_capacity_factors_file` (the
+        earlier, simpler one-tilt/one-azimuth baseline). Fleet vintage is
+        monthly (pipeline/24's own capacity panel), not annual.
+
+        MultiIndex columns (pecd_technology, nuts2_region), same shape as
+        `pecd_solar_capacity_factors_file`. See
+        pipeline/28_compute_solar_full_year.py.
+        """
+        return self.processed_data_path / "own_solar_full_year_cf.parquet"
+
+    @property
     def wind_onshore_plant_panel_file(self) -> Path:
         """Active onshore wind plants *today*, one row per unit: capacity, hub
         height, rotor diameter, turbine model, coordinates, nearest

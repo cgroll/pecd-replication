@@ -471,3 +471,73 @@ stages:
           cache: false
       - output/images/26_bias_vs_self_consumption.png:
           cache: false
+
+  verify_solar_technology_physics:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/27_verify_solar_technology_physics.ipynb
+      pipeline/27_verify_solar_technology_physics.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/27_verify_solar_technology_physics.ipynb
+    deps:
+      - pipeline/27_verify_solar_technology_physics.py
+      - pecdr/solar_orientation.py
+      - pecdr/solar_config_physics.py
+      - pecdr/skartveit_olseth.py
+      - pecdr/temporal_downscaling.py
+      - pecdr/era5.py
+      - data/processed/solar_unit_technology.parquet
+      - data/processed/pecd_solar_capacity_factors.parquet
+      - data/downloads/pecd/nuts_2_region_mask.zip
+      - data/downloads/era5
+    outs:
+      - book/notebooks/27_verify_solar_technology_physics.ipynb:
+          cache: false
+      - output/images/27_solar_physics_verification_scatter.png:
+          cache: false
+      - output/images/27_solar_physics_verification_timeseries.png:
+          cache: false
+
+  compute_solar_full_year:
+    cmd: uv run python pipeline/28_compute_solar_full_year.py
+    deps:
+      - pipeline/28_compute_solar_full_year.py
+      - pecdr/solar_full_year.py
+      - pecdr/solar_config_physics.py
+      - pecdr/solar_orientation.py
+      - pecdr/skartveit_olseth.py
+      - pecdr/era5.py
+      - pecdr/domain.py
+      - data/processed/solar_unit_technology.parquet
+      - data/downloads/pecd/nuts_2_region_mask.zip
+      - data/downloads/era5
+    outs:
+      - data/processed/own_solar_full_year_cf.parquet
+
+  analyse_solar_full_year:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/29_analyse_solar_full_year.ipynb
+      pipeline/29_analyse_solar_full_year.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/29_analyse_solar_full_year.ipynb
+    deps:
+      - pipeline/29_analyse_solar_full_year.py
+      - pecdr/capacity_weighting.py
+      - pecdr/domain.py
+      - data/processed/own_solar_full_year_cf.parquet
+      - data/processed/pecd_solar_capacity_factors.parquet
+      - data/processed/own_solar_capacity_factors.parquet
+      - data/processed/solar_capacity_by_nuts2_month.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/29_analyse_solar_full_year.ipynb:
+          cache: false
+      - output/images/29_solar_full_year_timeseries.png:
+          cache: false
+      - output/images/29_solar_full_year_vs_smard.png:
+          cache: false
+      - output/images/29_bias_vs_cf_level.png:
+          cache: false

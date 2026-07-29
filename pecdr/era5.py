@@ -160,6 +160,19 @@ def mask_weighted_regional_mean(data: xr.DataArray, mask: xr.DataArray) -> pd.Da
     return result.to_pandas()
 
 
+def region_centroids(mask: xr.DataArray) -> pd.DataFrame:
+    """Mask-weighted (lat, lon) centroid for every region in `mask` -- e.g.
+    for per-region solar position, a real (if modest) precision gain over
+    one shared domain-centroid point given Germany's ~9 degree longitude
+    span (see `pecdr.solar_config_physics`).
+    """
+    lat_grid, lon_grid = xr.broadcast(mask["latitude"], mask["longitude"])
+    weight_total = mask.sum(dim=["latitude", "longitude"])
+    centroid_lat = ((mask * lat_grid).sum(dim=["latitude", "longitude"]) / weight_total).to_pandas()
+    centroid_lon = ((mask * lon_grid).sum(dim=["latitude", "longitude"]) / weight_total).to_pandas()
+    return pd.DataFrame({"lat": centroid_lat, "lon": centroid_lon})
+
+
 def grid_cell_capacity_weighted_features(
     cf_grid: xr.DataArray, capacity_by_cell_month: pd.DataFrame, prefix: str
 ) -> pd.DataFrame:

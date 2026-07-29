@@ -985,8 +985,8 @@ stages:
       size: 2601
     - path: pipeline/24_build_solar_capacity_by_nuts2_month.py
       hash: md5
-      md5: 861a0a4f7878789050a86208fabb7659
-      size: 3992
+      md5: 855b7eb077b787d6970a843b9cbe00de
+      size: 4050
     outs:
     - path: data/processed/solar_capacity_by_nuts2_month.parquet
       hash: md5
@@ -998,8 +998,8 @@ stages:
       size: 9255
     - path: data/processed/solar_unit_technology.parquet
       hash: md5
-      md5: 877cc79db91772abb27b64d177409251
-      size: 93851151
+      md5: 94be770fc50c3988fb908329361d5479
+      size: 99428456
   compare_solar_approaches:
     cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
       python3 --output book/notebooks/25_compare_solar_approaches.ipynb 
@@ -1100,3 +1100,169 @@ stages:
       hash: md5
       md5: b402592bea699828ed79e9a90036ff10
       size: 38083
+  verify_solar_technology_physics:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/27_verify_solar_technology_physics.ipynb 
+      pipeline/27_verify_solar_technology_physics.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/27_verify_solar_technology_physics.ipynb
+    deps:
+    - path: data/downloads/era5
+      hash: md5
+      md5: b0707430bfbb6d4bd3a372156317563a.dir
+      size: 1383681994
+      nfiles: 91
+    - path: data/downloads/pecd/nuts_2_region_mask.zip
+      hash: md5
+      md5: f3fae7f46578aeebca4a1f34bf1ed103
+      size: 505690
+    - path: data/processed/pecd_solar_capacity_factors.parquet
+      hash: md5
+      md5: f1ac7e3e0f6162d5e04aac0f3a84e1f9
+      size: 51558551
+    - path: data/processed/solar_unit_technology.parquet
+      hash: md5
+      md5: 94be770fc50c3988fb908329361d5479
+      size: 99428456
+    - path: pecdr/era5.py
+      hash: md5
+      md5: 4b7ac0e9547182fcad710ee8042ae6ed
+      size: 9891
+    - path: pecdr/skartveit_olseth.py
+      hash: md5
+      md5: 2f81f2008c0430b5ea869b4a08e71473
+      size: 3163
+    - path: pecdr/solar_config_physics.py
+      hash: md5
+      md5: 82b9d00a439567a000e092dd8d49922c
+      size: 10320
+    - path: pecdr/solar_orientation.py
+      hash: md5
+      md5: e98fad4219d2166b95128bcf537c1af5
+      size: 6097
+    - path: pecdr/temporal_downscaling.py
+      hash: md5
+      md5: cbcb74bb256bfc7dd88290f7a13d383f
+      size: 4014
+    - path: pipeline/27_verify_solar_technology_physics.py
+      hash: md5
+      md5: 183b08b0fd07d16a20737fed25195212
+      size: 16094
+    outs:
+    - path: book/notebooks/27_verify_solar_technology_physics.ipynb
+      hash: md5
+      md5: 0222c9b6b1fa45382019f68a27ed0f3c
+      size: 27050
+    - path: output/images/27_solar_physics_verification_scatter.png
+      hash: md5
+      md5: 1067eabb00a688eb660a957849c28ea9
+      size: 438874
+    - path: output/images/27_solar_physics_verification_timeseries.png
+      hash: md5
+      md5: 7fa34067fb8feea5c59c008c66b17c41
+      size: 127304
+  compute_solar_full_year:
+    cmd: uv run python pipeline/28_compute_solar_full_year.py
+    deps:
+    - path: data/downloads/era5
+      hash: md5
+      md5: b0707430bfbb6d4bd3a372156317563a.dir
+      size: 1383681994
+      nfiles: 91
+    - path: data/downloads/pecd/nuts_2_region_mask.zip
+      hash: md5
+      md5: f3fae7f46578aeebca4a1f34bf1ed103
+      size: 505690
+    - path: data/processed/solar_unit_technology.parquet
+      hash: md5
+      md5: 94be770fc50c3988fb908329361d5479
+      size: 99428456
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/era5.py
+      hash: md5
+      md5: 4b7ac0e9547182fcad710ee8042ae6ed
+      size: 9891
+    - path: pecdr/skartveit_olseth.py
+      hash: md5
+      md5: 2f81f2008c0430b5ea869b4a08e71473
+      size: 3163
+    - path: pecdr/solar_config_physics.py
+      hash: md5
+      md5: 82b9d00a439567a000e092dd8d49922c
+      size: 10320
+    - path: pecdr/solar_full_year.py
+      hash: md5
+      md5: c3a69fc65faefba7c6fce94153c15827
+      size: 3035
+    - path: pecdr/solar_orientation.py
+      hash: md5
+      md5: e98fad4219d2166b95128bcf537c1af5
+      size: 6097
+    - path: pipeline/28_compute_solar_full_year.py
+      hash: md5
+      md5: 8494d834f733949e0f5227537358084a
+      size: 3208
+    outs:
+    - path: data/processed/own_solar_full_year_cf.parquet
+      hash: md5
+      md5: 459ae2b319e07d500055765acf37454c
+      size: 49533022
+  analyse_solar_full_year:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/29_analyse_solar_full_year.ipynb 
+      pipeline/29_analyse_solar_full_year.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/29_analyse_solar_full_year.ipynb
+    deps:
+    - path: data/processed/own_solar_capacity_factors.parquet
+      hash: md5
+      md5: 728b87eb3e43ff5324a44eaab72e9154
+      size: 14395077
+    - path: data/processed/own_solar_full_year_cf.parquet
+      hash: md5
+      md5: 459ae2b319e07d500055765acf37454c
+      size: 49533022
+    - path: data/processed/pecd_solar_capacity_factors.parquet
+      hash: md5
+      md5: f1ac7e3e0f6162d5e04aac0f3a84e1f9
+      size: 51558551
+    - path: data/processed/solar_capacity_by_nuts2_month.parquet
+      hash: md5
+      md5: 7c150064c796ba705c1d9ec00abae5f1
+      size: 154691
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pipeline/29_analyse_solar_full_year.py
+      hash: md5
+      md5: a9c3520e3acef7e2a94aac407fb9026f
+      size: 12296
+    outs:
+    - path: book/notebooks/29_analyse_solar_full_year.ipynb
+      hash: md5
+      md5: eee0fd40c4ba8360d25a194ffd5c0979
+      size: 33215
+    - path: output/images/29_bias_vs_cf_level.png
+      hash: md5
+      md5: 2031838cc6c56160801a5a2c45412a64
+      size: 380085
+    - path: output/images/29_solar_full_year_timeseries.png
+      hash: md5
+      md5: 0074f11de55b5aaaef80a02573b58920
+      size: 241509
+    - path: output/images/29_solar_full_year_vs_smard.png
+      hash: md5
+      md5: b84a3519e291615c7c36fe8a8388c18f
+      size: 667232

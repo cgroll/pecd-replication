@@ -25,6 +25,8 @@ project:
       children:
         - file: notebooks/25_compare_solar_approaches.ipynb
         - file: notebooks/26_analyse_solar_bias_drivers.ipynb
+        - file: notebooks/27_verify_solar_technology_physics.ipynb
+        - file: notebooks/29_analyse_solar_full_year.ipynb
 site:
   options:
     folders: true

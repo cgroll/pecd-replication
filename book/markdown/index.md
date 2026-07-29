@@ -349,10 +349,11 @@ masking, not inflating, the true bias.
 | [33: Full-year validation](../notebooks/33_analyse_wind_offshore_full_year.ipynb) | Same comparison across all 61,368 hours of 2019-2025 — MAE 0.059, corr 0.986 vs. PECD's own PEOF product, with a persistent +0.043 mean bias |
 | [34: Comparing all approaches](../notebooks/34_compare_wind_offshore_approaches.ipynb) | Brings in SMARD's actual net generation; this project's replication reaches the best correlation of the three (0.916) but the largest absolute bias, likely reflecting unmodeled offshore curtailment. Also fixes a data-quality issue: 3 of PECD's 6 PEOF zones are 100% unmodeled by PECD, which was silently diluting approach 1's capacity-weighted denominator |
 | [35: Fitting optimal capacity weights](../notebooks/35_fit_wind_offshore_capacity_weights.ipynb) | Tests whether the bias is just wrong fleet numbers: an NNLS-fit optimal capacity vector zeroes out the bias but barely improves correlation — capacity accounting explains the *level* gap, not the *shape* gap, pointing at curtailment (or another dynamic effect) for what's left |
+| [36: What drives the bias?](../notebooks/36_analyse_wind_offshore_bias_drivers.ipynb) | Offshore mirror of onshore's bias-driver analysis (bias vs. CF level/month/hour/oversupply/year) — bias climbs cleanly and monotonically with system-wide renewable oversupply all the way to the highest bin (unlike onshore, where that panel mostly restates the CF-level result), and roughly doubles from a 2019-2021 baseline to a 2023-2024 peak before easing in 2025, corroborating notebook 35's capacity-fitting timeline independently. Two genuinely offshore-specific, unresolved departures from onshore's pattern: bias reverses at the very highest CF bins instead of growing monotonically, and peaks at midday instead of overnight |
 
-Deliberately out of scope for this pass, same incremental spirit as
-solar's own build-out: bias-driver analysis (by year/month/hour/cf-level)
-and walk-forward bias correction, onshore's steps 22/23.
+Bias-driver analysis is now built for offshore (notebook 36 above); still
+deliberately out of scope for this pass, same incremental spirit as
+solar's own build-out: walk-forward bias correction, onshore's step 23.
 
 ## Solar PV replication
 
@@ -432,3 +433,152 @@ and the year-over-year bias drift shared by *all three* approaches
 (see [Current status](#current-status-how-well-does-each-replication-work)
 above) — none of these have an isolated ground-truth series to check
 against either.
+
+## Congestion & curtailment: what the redispatch data shows
+
+Before trusting any *estimated* curtailment model, it's worth looking at
+real ground truth. Since July 2022, SMARD publishes monthly, technology-
+labeled volumes of feed-in curtailed under Germany's Redispatch 2.0
+regime — real, if coarse (monthly, national-only, redispatch-only, no
+market-based curtailment). [A dedicated chapter](congestion_curtailment_data.md)
+walks through what this data is, where it comes from, and what it shows:
+wind dominates curtailment volume, offshore wind is curtailed roughly 8-9x
+more heavily *per MW installed* than onshore, and PV's smaller curtailment
+tracks its own generation season. This chapter is deliberately descriptive
+only — no tie-back yet to the residual-load model's own curtailment
+estimates below.
+
+### Roadmap: congestion data notebooks
+
+| Notebook | What it shows |
+|---|---|
+| [44: Curtailment by source and season](../notebooks/44_analyse_congestion_curtailment.ipynb) | Real redispatch curtailment volumes by energy source, 2022-2026: magnitude, trend, and seasonal pattern |
+
+## Residual load: demand and curtailment estimation
+
+The wind and solar workstreams above check *generation* against SMARD.
+The wider project goal, stated at the top of this page, is a **day-ahead
+residual-load forecast** — which needs two things that are never directly
+observed: gross power demand (grid-metered load plus invisible
+behind-the-meter self-consumption) and renewable generation net of
+curtailment. [A walkthrough page](residual_load_walkthrough.md) teaches
+this model start to finish — the problem, the mental model, the
+equations, and the evidence, in that order — and a
+[dedicated reference page](curtailment_system_equations.md) writes down
+the full system of equations relating these hidden variables to what
+this project can actually observe. This section summarizes what came out
+of estimating them.
+
+**The gross-demand regression** (notebook 38) fits grid-metered load as a
+calendar/temperature demand model minus PV self-consumption, identified
+by a simple structural fact: behind-the-meter self-consumption can only
+exist when PV is producing, so nighttime and heavily overcast hours pin
+down the demand-model coefficients with zero interference, while daytime
+hours (where PV output varies a lot day to day from cloud cover, at fixed
+calendar/weather conditions) pin down the self-consumption effect — one
+regression, not two sequential models. Both of its built-in falsification
+checks (a feed-in category that structurally cannot self-consume; wind
+potential, which has no behind-the-meter channel at all) came back
+significant rather than the expected zero — investigated rather than
+brushed aside: the PV category split turned out to be a genuine
+non-identification problem (the two candidate regressors correlate at
+0.95), while wind's effect survived a direct test of the obvious
+alternative explanation (a richer temperature spline barely changed it)
+and is more likely a real, different phenomenon — price-responsive
+industrial demand rising during cheap, high-wind hours — that the test's
+own premise didn't anticipate. The aggregate specification's self-consumption
+estimate (~12% of national PV potential, net of the ~40% of the fleet
+that's registered full-feed-in and structurally can't self-consume at
+all) is this notebook's trustworthy headline number.
+
+**Curtailment estimation** (notebook 39) calibrates a curtailment-rate-vs-
+oversupply curve on wind's own gap — clean because wind has no
+behind-the-meter term to confound it — using a **potential-based**
+oversupply proxy (`P_total/D_true_hat`, not the observed-generation-based
+proxy from the wind-offshore workstream's own bias-driver notebook, which
+understates true oversupply exactly when curtailment is largest) and
+transfers that curve to PV. The result reframes what's driving PV's gap
+against SMARD: of its ~2177 MW average gap, ~1653 MW (76%) is predicted
+curtailment — more than self-consumption, which wasn't obvious going in.
+The residual left over correlates with the self-consumption-registered
+capacity share at 0.643, though both series simply trend upward together
+over 2019-2025, so that number is suggestive rather than a tight
+validated match.
+
+**The residual-load backtest** (notebook 40), trained on 2019-2023 and
+evaluated out-of-time on 2024-2025 against realized residual load
+(computable directly from SMARD, no new data needed), shows the full
+chain roughly **halves the MAE** of the naive baseline that skips all of
+this hidden-variable estimation (4,856 MW vs. 10,560 MW) and cuts the bias
+by roughly 5x (-1,936 MW vs. -9,750 MW), with a real but smaller
+correlation improvement (0.915 vs. 0.905) — consistent with the demand and
+curtailment corrections fixing the *level* more than the *day-to-day
+pattern*, which both approaches already capture reasonably well from
+shared weather inputs. (Caught and fixed while building this comparison:
+the curtailment curve originally returned `NaN` for any out-of-time hour
+whose oversupply proxy fell outside the training period's own range —
+4.1% of the test period — silently dropped rather than handled; fixed in
+`pecdr/residual_load.py` by clipping into the fitted range, the same
+graceful-degradation behavior a tree-based model gives for free.)
+
+**Does the structure actually earn its keep, though?** (notebook 42)
+splits "does weather information help" from "does explicitly modeling
+unobserved quantities help *on top of* that," with four more points on
+the same out-of-time backtest: a calendar-only floor with no weather at
+all, the same features as the full model fed into one flat linear
+regression with no structural decomposition, the same features again fit
+with LightGBM, and a capacity-factor-rescaled version of the LightGBM
+model. The answers are not what a reader might expect: adding
+raw weather-derived potential without correcting it for curtailment
+(the naive baseline) is *no better than no weather information at all* in
+absolute-error terms (10,560 MW MAE vs. 10,284 MW for calendar-only) —
+correlation improves a lot (0.905 vs. 0.486) but the uncorrected bias
+overwhelms that benefit. More surprisingly, a plain linear regression
+given the *same inputs* as the full structural model, with none of the
+hand-built equations, does *better* than the structural model on this
+backtest (MAE 4,177 MW, corr 0.941, vs. the structural model's 4,856 MW
+/ 0.915) — in this setting, most of the benefit comes from having the
+right features at all, not from the specific structural machinery used to
+extract them. The LightGBM version underperforms the linear one, for a
+concrete, checked reason rather than a mystery: installed capacity grew
+throughout 2019-2025, so `years_since_start` has 100% of test-period rows
+beyond the training range and `P_wind_off_mw` has 20% — tree-based models
+cannot extrapolate a trend past what they were trained on, while a linear
+trend term does so by construction.
+
+**Does capacity-factor rescaling fix LightGBM's handicap, as expected?**
+Partially, not fully. A sixth model swaps `P_i(t)` for capacity factor
+(`P_i(t)/Capacity_i(t)`, bounded regardless of fleet size) as LightGBM's
+features and predicts `ResidualLoad(t)/TotalCapacity(t)` instead of MW
+directly, reconstructing the final MW prediction by multiplying back by
+the actual (looked-up, not modeled) capacity at the test time. This
+narrows the gap substantially (MAE 6,714 → 5,294 MW) — confirming the
+extrapolation story really was the mechanism — but doesn't reach M3 or
+even M2. Checked directly rather than left unexplained: the model's error
+*in the normalized domain* is tiny and essentially unbiased in-sample
+(~0.000), but picks up a small out-of-sample bias (~0.006) on the test
+period, and that small bias gets **amplified** when multiplied back by
+`TotalCapacity_mw` to reconstruct MW — confirmed by a 0.44 correlation
+between the signed MW error and total capacity at test time. Rescaling
+fixes the tree's *input*-side extrapolation problem; it trades in a
+smaller, different amplification effect on the *output*-reconstruction
+side instead.
+
+### Roadmap: residual-load notebooks
+
+| Notebook | What it shows |
+|---|---|
+| [Walkthrough](residual_load_walkthrough.md) | Start here: the problem, the mental model, the equations, and the evidence, taught in order |
+| [Equations](curtailment_system_equations.md) | The full notation and system of equations this section implements |
+| [38: Estimating gross demand](../notebooks/38_estimate_gross_demand.ipynb) | The demand regression, both falsification checks (and why neither passed cleanly), the temperature-response shape, and the summer/winter intraday profile showing the self-consumption dip being filled in |
+| [39: Estimating curtailment](../notebooks/39_estimate_curtailment.ipynb) | The wind-calibrated curtailment curve, the onshore-vs-offshore shape robustness check, and the PV gap decomposition into curtailment vs. self-consumption |
+| [40: Forecasting residual load](../notebooks/40_forecast_residual_load.ipynb) | Out-of-time backtest against realized residual load, full model vs. naive baseline |
+| [41: Illustrating the model](../notebooks/41_illustrate_residual_load_model.ipynb) | Ground-truth potential-vs-observed charts and the PV gap decomposition, in representative time windows |
+| [42: Does structure earn its keep?](../notebooks/42_compare_model_flexibility.ipynb) | Six models on the same backtest — calendar-only, naive, full structural, plain linear on the same features, LightGBM, and capacity-factor-rescaled LightGBM — isolating whether the improvement comes from having weather-derived features at all, from the structural extraction of unobserved quantities, or from how a flexible model's inputs are scaled |
+
+What isn't resolved yet: the price-responsive-demand confound flagged in
+notebook 38, the un-detrended self-consumption cross-check in notebook 39,
+and validating the curtailment estimate against real Redispatch 2.0 data
+(available from October 2021, deliberately deferred — see the equations
+page's discussion of why real congestion data can only validate an
+already-estimated model, never serve as a live forecasting input).

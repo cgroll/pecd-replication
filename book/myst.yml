@@ -12,6 +12,7 @@ project:
   github: cgroll/pecd-replication
   toc:
     - file: markdown/index.md
+    - file: markdown/electricity_system_foundations.md
     - title: Wind bias-correction replication
       children:
         - file: notebooks/04_replicate_wind_bias_correction.ipynb
@@ -27,12 +28,26 @@ project:
         - file: notebooks/33_analyse_wind_offshore_full_year.ipynb
         - file: notebooks/34_compare_wind_offshore_approaches.ipynb
         - file: notebooks/35_fit_wind_offshore_capacity_weights.ipynb
+        - file: notebooks/36_analyse_wind_offshore_bias_drivers.ipynb
     - title: Solar PV replication
       children:
         - file: notebooks/25_compare_solar_approaches.ipynb
         - file: notebooks/26_analyse_solar_bias_drivers.ipynb
         - file: notebooks/27_verify_solar_technology_physics.ipynb
         - file: notebooks/29_analyse_solar_full_year.ipynb
+    - title: "Congestion & curtailment: what the data shows"
+      children:
+        - file: markdown/congestion_curtailment_data.md
+        - file: notebooks/44_analyse_congestion_curtailment.ipynb
+    - title: "Residual load: demand & curtailment estimation"
+      children:
+        - file: markdown/residual_load_walkthrough.md
+        - file: markdown/curtailment_system_equations.md
+        - file: notebooks/38_estimate_gross_demand.ipynb
+        - file: notebooks/39_estimate_curtailment.ipynb
+        - file: notebooks/40_forecast_residual_load.ipynb
+        - file: notebooks/41_illustrate_residual_load_model.ipynb
+        - file: notebooks/42_compare_model_flexibility.ipynb
 site:
   options:
     folders: true

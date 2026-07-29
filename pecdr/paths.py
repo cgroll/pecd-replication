@@ -132,6 +132,14 @@ class ProjPaths:
         """
         return self.processed_data_path / "target_panel.parquet"
 
+    @property
+    def redispatch_by_source_file(self) -> Path:
+        """Monthly SMARD redispatch-by-energy-source parquet (tidy: month,
+        direction, energy_source, gwh). See pecdr/smard_redispatch.py and
+        pipeline/43_download_redispatch_by_source.py.
+        """
+        return self.smard_downloads_path / "redispatch_by_source.parquet"
+
     # ------------------------------------------------------------------ #
     # Raw ERA5 downloads                                                   #
     # ------------------------------------------------------------------ #
@@ -496,6 +504,18 @@ class ProjPaths:
         ~/research/mastr-power-capacities-germany/pipeline/07_build_wind_zone_panel.py.
         """
         return self.mastr_project_path / "data" / "processed" / "capacity_by_peof_month.parquet"
+
+    @property
+    def residual_load_inputs_file(self) -> Path:
+        """Consolidated hourly input panel for the residual-load workstream:
+        grid-metered load (`D_grid_mw`), absolute-MW potential generation
+        per technology (`P_wind_on_mw`, `P_wind_off_mw`, `P_pv_mw`, plus the
+        `P_pv_full_feed_in_mw`/`P_pv_self_consumption_mw` split), Germany
+        area-average temperature, and calendar features (day of week, hour,
+        holiday, year trend). See `book/markdown/curtailment_system_equations.md`
+        and pipeline/37_build_residual_load_inputs.py.
+        """
+        return self.processed_data_path / "residual_load_inputs.parquet"
 
     # ------------------------------------------------------------------ #
     # Helpers                                                              #

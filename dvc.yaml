@@ -14,6 +14,15 @@ stages:
       - data/downloads/smard/load.parquet:
           persist: true
 
+  download_redispatch_by_source:
+    cmd: uv run python pipeline/43_download_redispatch_by_source.py
+    deps:
+      - pipeline/43_download_redispatch_by_source.py
+      - pecdr/smard_redispatch.py
+    outs:
+      - data/downloads/smard/redispatch_by_source.parquet:
+          persist: true
+
   build_target_panel:
     cmd: uv run python pipeline/14_build_target_panel.py
     deps:
@@ -470,6 +479,186 @@ stages:
       - output/images/35_fitted_capacity_trajectories.png:
           cache: false
       - output/images/35_fit_quality_vs_smard.png:
+          cache: false
+
+  analyse_wind_offshore_bias_drivers:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/36_analyse_wind_offshore_bias_drivers.ipynb
+      pipeline/36_analyse_wind_offshore_bias_drivers.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/36_analyse_wind_offshore_bias_drivers.ipynb
+    deps:
+      - pipeline/36_analyse_wind_offshore_bias_drivers.py
+      - pecdr/capacity_weighting.py
+      - pecdr/domain.py
+      - data/processed/wind_offshore_full_year_cf.parquet
+      - data/processed/pecd_wind_offshore_capacity_factors.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/36_analyse_wind_offshore_bias_drivers.ipynb:
+          cache: false
+      - output/images/36_bias_vs_cf_level.png:
+          cache: false
+      - output/images/36_bias_by_month.png:
+          cache: false
+      - output/images/36_bias_by_hour.png:
+          cache: false
+      - output/images/36_bias_vs_oversupply.png:
+          cache: false
+      - output/images/36_bias_by_year.png:
+          cache: false
+
+  analyse_congestion_curtailment:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/44_analyse_congestion_curtailment.ipynb
+      pipeline/44_analyse_congestion_curtailment.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/44_analyse_congestion_curtailment.ipynb
+    deps:
+      - pipeline/44_analyse_congestion_curtailment.py
+      - pecdr/paths.py
+      - data/downloads/smard/redispatch_by_source.parquet
+    outs:
+      - book/notebooks/44_analyse_congestion_curtailment.ipynb:
+          cache: false
+      - output/images/44_curtailment_by_source_over_time.png:
+          cache: false
+      - output/images/44_cumulative_curtailment_by_source.png:
+          cache: false
+      - output/images/44_seasonal_curtailment_pattern.png:
+          cache: false
+
+  build_residual_load_inputs:
+    cmd: uv run python pipeline/37_build_residual_load_inputs.py
+    deps:
+      - pipeline/37_build_residual_load_inputs.py
+      - pecdr/residual_load.py
+      - pecdr/capacity_weighting.py
+      - pecdr/domain.py
+      - data/processed/target_panel.parquet
+      - data/processed/wind_onshore_full_year_cf.parquet
+      - data/processed/wind_offshore_full_year_cf.parquet
+      - data/processed/own_solar_full_year_cf.parquet
+      - data/processed/solar_capacity_by_nuts2_month.parquet
+      - data/processed/solar_capacity_by_pv_category_month.parquet
+      - data/processed/pecd_temperature_de.parquet
+      - data/processed/wind_onshore_plant_panel_2019.parquet
+      - data/processed/wind_offshore_plant_panel_2019.parquet
+    outs:
+      - data/processed/residual_load_inputs.parquet
+
+  estimate_gross_demand:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/38_estimate_gross_demand.ipynb
+      pipeline/38_estimate_gross_demand.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/38_estimate_gross_demand.ipynb
+    deps:
+      - pipeline/38_estimate_gross_demand.py
+      - pecdr/residual_load.py
+      - data/processed/residual_load_inputs.parquet
+    outs:
+      - book/notebooks/38_estimate_gross_demand.ipynb:
+          cache: false
+      - output/images/38_temperature_response.png:
+          cache: false
+      - output/images/38_intraday_profile_summer_winter.png:
+          cache: false
+      - output/images/38_sample_month_july_2023.png:
+          cache: false
+
+  estimate_curtailment:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/39_estimate_curtailment.ipynb
+      pipeline/39_estimate_curtailment.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/39_estimate_curtailment.ipynb
+    deps:
+      - pipeline/39_estimate_curtailment.py
+      - pecdr/residual_load.py
+      - pecdr/domain.py
+      - data/processed/residual_load_inputs.parquet
+      - data/processed/target_panel.parquet
+      - data/processed/solar_capacity_by_pv_category_month.parquet
+    outs:
+      - book/notebooks/39_estimate_curtailment.ipynb:
+          cache: false
+      - output/images/39_onshore_vs_offshore_curtailment_shape.png:
+          cache: false
+      - output/images/39_pv_residual_vs_self_consumption_share.png:
+          cache: false
+
+  forecast_residual_load:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/40_forecast_residual_load.ipynb
+      pipeline/40_forecast_residual_load.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/40_forecast_residual_load.ipynb
+    deps:
+      - pipeline/40_forecast_residual_load.py
+      - pecdr/residual_load.py
+      - pecdr/domain.py
+      - data/processed/residual_load_inputs.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/40_forecast_residual_load.ipynb:
+          cache: false
+      - output/images/40_test_period_timeseries.png:
+          cache: false
+      - output/images/40_scatter_vs_realized.png:
+          cache: false
+
+  illustrate_residual_load_model:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/41_illustrate_residual_load_model.ipynb
+      pipeline/41_illustrate_residual_load_model.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/41_illustrate_residual_load_model.ipynb
+    deps:
+      - pipeline/41_illustrate_residual_load_model.py
+      - pecdr/residual_load.py
+      - data/processed/residual_load_inputs.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/41_illustrate_residual_load_model.ipynb:
+          cache: false
+      - output/images/41_wind_offshore_potential_vs_observed.png:
+          cache: false
+      - output/images/41_pv_potential_vs_observed.png:
+          cache: false
+      - output/images/41_pv_gap_decomposition.png:
+          cache: false
+
+  compare_model_flexibility:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/42_compare_model_flexibility.ipynb
+      pipeline/42_compare_model_flexibility.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/42_compare_model_flexibility.ipynb
+    deps:
+      - pipeline/42_compare_model_flexibility.py
+      - pecdr/residual_load.py
+      - pecdr/domain.py
+      - data/processed/residual_load_inputs.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/42_compare_model_flexibility.ipynb:
+          cache: false
+      - output/images/42_mae_comparison.png:
           cache: false
 
   analyse_bias_drivers:

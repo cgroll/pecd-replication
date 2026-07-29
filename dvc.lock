@@ -321,8 +321,8 @@ stages:
       size: 3305
     - path: pecdr/plant_panel.py
       hash: md5
-      md5: 8b5b9556e762e729e045474fc4d5f771
-      size: 2600
+      md5: af30be892a9152beef1c10f97d8b943d
+      size: 3138
     - path: pipeline/08_build_wind_onshore_plant_panel.py
       hash: md5
       md5: 37425b6abf15257c42e5596b066f4070
@@ -487,8 +487,8 @@ stages:
       size: 1371
     - path: pecdr/full_year.py
       hash: md5
-      md5: 835e935c1d76e4d14b126ee5a28560ac
-      size: 4706
+      md5: 64903830b091afb4b9ba702de551351d
+      size: 5599
     - path: pecdr/plant_model.py
       hash: md5
       md5: db512831f07779eab963286aa1121c20
@@ -1621,3 +1621,368 @@ stages:
       hash: md5
       md5: 6abedebb8a077161ce3bf1b550da920e
       size: 159132
+  analyse_wind_offshore_bias_drivers:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output 
+      book/notebooks/36_analyse_wind_offshore_bias_drivers.ipynb 
+      pipeline/36_analyse_wind_offshore_bias_drivers.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/36_analyse_wind_offshore_bias_drivers.ipynb
+    deps:
+    - path: data/processed/pecd_wind_offshore_capacity_factors.parquet
+      hash: md5
+      md5: fc0302a6df4558f45f41a11788b71060
+      size: 2929080
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: data/processed/wind_offshore_full_year_cf.parquet
+      hash: md5
+      md5: 385ff4fcdf7e33a312b9bf7325067fd4
+      size: 3065696
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pipeline/36_analyse_wind_offshore_bias_drivers.py
+      hash: md5
+      md5: 69c2e2012097bfc3bb1153f8ce1f31e2
+      size: 13538
+    outs:
+    - path: book/notebooks/36_analyse_wind_offshore_bias_drivers.ipynb
+      hash: md5
+      md5: 2198f40eef4b74c4faba014ba9dc175b
+      size: 26491
+    - path: output/images/36_bias_by_hour.png
+      hash: md5
+      md5: a846ba78cc0dad916d6c4992befa3cce
+      size: 67730
+    - path: output/images/36_bias_by_month.png
+      hash: md5
+      md5: 3be108cc574a767d198950ecef277670
+      size: 42135
+    - path: output/images/36_bias_by_year.png
+      hash: md5
+      md5: 232912730c1624cb6093dcea274df9a0
+      size: 42232
+    - path: output/images/36_bias_vs_cf_level.png
+      hash: md5
+      md5: 87cb40b1205ac3aa914b5ff7531e41d4
+      size: 43851
+    - path: output/images/36_bias_vs_oversupply.png
+      hash: md5
+      md5: bffdb955c00e9957afc751385675ec5d
+      size: 48875
+  build_residual_load_inputs:
+    cmd: uv run python pipeline/37_build_residual_load_inputs.py
+    deps:
+    - path: data/processed/own_solar_full_year_cf.parquet
+      hash: md5
+      md5: 459ae2b319e07d500055765acf37454c
+      size: 49533022
+    - path: data/processed/pecd_temperature_de.parquet
+      hash: md5
+      md5: c53a0275914a16ef01be5e3ea462c620
+      size: 1796064
+    - path: data/processed/solar_capacity_by_nuts2_month.parquet
+      hash: md5
+      md5: 7c150064c796ba705c1d9ec00abae5f1
+      size: 154691
+    - path: data/processed/solar_capacity_by_pv_category_month.parquet
+      hash: md5
+      md5: 8595a65ea8308c99c5e11a70e2b573c4
+      size: 9255
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: data/processed/wind_offshore_full_year_cf.parquet
+      hash: md5
+      md5: 385ff4fcdf7e33a312b9bf7325067fd4
+      size: 3065696
+    - path: data/processed/wind_offshore_plant_panel_2019.parquet
+      hash: md5
+      md5: 007ca403cc1770b95775031e20efeb5c
+      size: 84433
+    - path: data/processed/wind_onshore_full_year_cf.parquet
+      hash: md5
+      md5: 162caf14f3bf5155fad5fcc1dbae9a5b
+      size: 3612379
+    - path: data/processed/wind_onshore_plant_panel_2019.parquet
+      hash: md5
+      md5: 7651ddaac55cf3a03cc7b7135d6cb81a
+      size: 903611
+    - path: pecdr/capacity_weighting.py
+      hash: md5
+      md5: e3eabf0aaa3ba7d45cfd7954c5a93408
+      size: 3133
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/residual_load.py
+      hash: md5
+      md5: 0c1b260656e9889657eb03953bd829c9
+      size: 8854
+    - path: pipeline/37_build_residual_load_inputs.py
+      hash: md5
+      md5: 270f6b3b5d571ec7b94ede20cf68afc2
+      size: 5385
+    outs:
+    - path: data/processed/residual_load_inputs.parquet
+      hash: md5
+      md5: 3c9eebfd7117d8305f563d78c0443cd5
+      size: 4872325
+  estimate_gross_demand:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/38_estimate_gross_demand.ipynb 
+      pipeline/38_estimate_gross_demand.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/38_estimate_gross_demand.ipynb
+    deps:
+    - path: data/processed/residual_load_inputs.parquet
+      hash: md5
+      md5: 3c9eebfd7117d8305f563d78c0443cd5
+      size: 4872325
+    - path: pecdr/residual_load.py
+      hash: md5
+      md5: 0c1b260656e9889657eb03953bd829c9
+      size: 8854
+    - path: pipeline/38_estimate_gross_demand.py
+      hash: md5
+      md5: 1da000edbaf348d0156ce6ca64cf9b59
+      size: 13439
+    outs:
+    - path: book/notebooks/38_estimate_gross_demand.ipynb
+      hash: md5
+      md5: 94dc8ba45495471a6898eb58736380fd
+      size: 26742
+    - path: output/images/38_intraday_profile_summer_winter.png
+      hash: md5
+      md5: 8a1aceacd05c40616d875f3162ea77f8
+      size: 131693
+    - path: output/images/38_sample_month_july_2023.png
+      hash: md5
+      md5: 4e13b6426fde2055ca1afe51105f4534
+      size: 240468
+    - path: output/images/38_temperature_response.png
+      hash: md5
+      md5: ff975e664b744f403c0767cbcc2da673
+      size: 45574
+  forecast_residual_load:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/40_forecast_residual_load.ipynb 
+      pipeline/40_forecast_residual_load.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/40_forecast_residual_load.ipynb
+    deps:
+    - path: data/processed/residual_load_inputs.parquet
+      hash: md5
+      md5: 3c9eebfd7117d8305f563d78c0443cd5
+      size: 4872325
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/residual_load.py
+      hash: md5
+      md5: 0c1b260656e9889657eb03953bd829c9
+      size: 8854
+    - path: pipeline/40_forecast_residual_load.py
+      hash: md5
+      md5: 12cd8a7f3f798090e5530a1991a92516
+      size: 7596
+    outs:
+    - path: book/notebooks/40_forecast_residual_load.ipynb
+      hash: md5
+      md5: 9ae6e53a6fe3245cb1d7d08afdab9cd7
+      size: 15482
+    - path: output/images/40_scatter_vs_realized.png
+      hash: md5
+      md5: 02541c884493258a980d89983ef1243c
+      size: 316707
+    - path: output/images/40_test_period_timeseries.png
+      hash: md5
+      md5: 040562c56a03cdf889ccf49a3ccb4578
+      size: 435606
+  estimate_curtailment:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/39_estimate_curtailment.ipynb 
+      pipeline/39_estimate_curtailment.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/39_estimate_curtailment.ipynb
+    deps:
+    - path: data/processed/residual_load_inputs.parquet
+      hash: md5
+      md5: 3c9eebfd7117d8305f563d78c0443cd5
+      size: 4872325
+    - path: data/processed/solar_capacity_by_pv_category_month.parquet
+      hash: md5
+      md5: 8595a65ea8308c99c5e11a70e2b573c4
+      size: 9255
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/residual_load.py
+      hash: md5
+      md5: 0c1b260656e9889657eb03953bd829c9
+      size: 8854
+    - path: pipeline/39_estimate_curtailment.py
+      hash: md5
+      md5: 98a4183f119712c7d7953f8afbeb978e
+      size: 9417
+    outs:
+    - path: book/notebooks/39_estimate_curtailment.ipynb
+      hash: md5
+      md5: e9f598065e6c47bba79a0b83211fe869
+      size: 15041
+    - path: output/images/39_onshore_vs_offshore_curtailment_shape.png
+      hash: md5
+      md5: dda46159972c73e823ab7d3e52495fd6
+      size: 67840
+    - path: output/images/39_pv_residual_vs_self_consumption_share.png
+      hash: md5
+      md5: 2601feb60b07e880365fa00d258e5b5f
+      size: 156007
+  illustrate_residual_load_model:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/41_illustrate_residual_load_model.ipynb 
+      pipeline/41_illustrate_residual_load_model.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/41_illustrate_residual_load_model.ipynb
+    deps:
+    - path: data/processed/residual_load_inputs.parquet
+      hash: md5
+      md5: 3c9eebfd7117d8305f563d78c0443cd5
+      size: 4872325
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/residual_load.py
+      hash: md5
+      md5: 0c1b260656e9889657eb03953bd829c9
+      size: 8854
+    - path: pipeline/41_illustrate_residual_load_model.py
+      hash: md5
+      md5: 6fa54c22d60a8d24348374aa11725849
+      size: 6255
+    outs:
+    - path: book/notebooks/41_illustrate_residual_load_model.ipynb
+      hash: md5
+      md5: 21e5eca7d955cf25165b33e99bcc2b2f
+      size: 10654
+    - path: output/images/41_pv_gap_decomposition.png
+      hash: md5
+      md5: cd4ece348f6105c977a16d21ac8e148c
+      size: 37084
+    - path: output/images/41_pv_potential_vs_observed.png
+      hash: md5
+      md5: 3d29e59b1cd1783c43329a283cce48a5
+      size: 303259
+    - path: output/images/41_wind_offshore_potential_vs_observed.png
+      hash: md5
+      md5: 91916ed46c52ab16e3a493691682bea1
+      size: 283800
+  compare_model_flexibility:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/42_compare_model_flexibility.ipynb 
+      pipeline/42_compare_model_flexibility.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/42_compare_model_flexibility.ipynb
+    deps:
+    - path: data/processed/residual_load_inputs.parquet
+      hash: md5
+      md5: 3c9eebfd7117d8305f563d78c0443cd5
+      size: 4872325
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: 103b2a6e367e505737794c1e0fe10aa5
+      size: 1967734
+    - path: pecdr/domain.py
+      hash: md5
+      md5: 83cf0bb4503cbdb632e8eb7410f6ad6a
+      size: 1371
+    - path: pecdr/residual_load.py
+      hash: md5
+      md5: 0c1b260656e9889657eb03953bd829c9
+      size: 8854
+    - path: pipeline/42_compare_model_flexibility.py
+      hash: md5
+      md5: 33e5f94c1718bf6a6263e61a49baae13
+      size: 16219
+    outs:
+    - path: book/notebooks/42_compare_model_flexibility.ipynb
+      hash: md5
+      md5: 058ac363258594c51e2782903acc1c96
+      size: 28161
+    - path: output/images/42_mae_comparison.png
+      hash: md5
+      md5: 0721fb34fdf4a134be68e3310219b8c6
+      size: 46698
+  download_redispatch_by_source:
+    cmd: uv run python pipeline/43_download_redispatch_by_source.py
+    deps:
+    - path: pecdr/smard_redispatch.py
+      hash: md5
+      md5: 3ae2b1993ce1cf2eb9bf60b8c16ff587
+      size: 4166
+    - path: pipeline/43_download_redispatch_by_source.py
+      hash: md5
+      md5: 44119f7ec084962dc19bf658a16cc83c
+      size: 1073
+    outs:
+    - path: data/downloads/smard/redispatch_by_source.parquet
+      hash: md5
+      md5: a95df651d8f37029037bddac4a27307b
+      size: 8935
+  analyse_congestion_curtailment:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output book/notebooks/44_analyse_congestion_curtailment.ipynb 
+      pipeline/44_analyse_congestion_curtailment.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/44_analyse_congestion_curtailment.ipynb
+    deps:
+    - path: data/downloads/smard/redispatch_by_source.parquet
+      hash: md5
+      md5: a95df651d8f37029037bddac4a27307b
+      size: 8935
+    - path: pecdr/paths.py
+      hash: md5
+      md5: 6ff38afbb2a1d4aae7f24b9b5d583ebc
+      size: 25062
+    - path: pipeline/44_analyse_congestion_curtailment.py
+      hash: md5
+      md5: 0382876b1ed484b2ac911984a138d955
+      size: 8025
+    outs:
+    - path: book/notebooks/44_analyse_congestion_curtailment.ipynb
+      hash: md5
+      md5: d0a0ed498c0406dbd13952a7d09d5b13
+      size: 22056
+    - path: output/images/44_cumulative_curtailment_by_source.png
+      hash: md5
+      md5: 7dcb6f5bf8342ce5057ba32b89224ea1
+      size: 73441
+    - path: output/images/44_curtailment_by_source_over_time.png
+      hash: md5
+      md5: 4ee5266065de312dfa5c3b85310e53c0
+      size: 207034
+    - path: output/images/44_seasonal_curtailment_pattern.png
+      hash: md5
+      md5: 25b50cd992c5a4fbbb5c810fb7d44520
+      size: 109225

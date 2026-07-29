@@ -5,6 +5,9 @@
     <loc>http://localhost:3000</loc>
   </url>
   <url>
+    <loc>http://localhost:3000/markdown/electricity-system-foundations</loc>
+  </url>
+  <url>
     <loc>http://localhost:3000/notebooks/replicate-wind-bias-correction</loc>
   </url>
   <url>
@@ -26,9 +29,57 @@
     <loc>http://localhost:3000/notebooks/bias-correct-walk-forward</loc>
   </url>
   <url>
+    <loc>http://localhost:3000/notebooks/replicate-wind-offshore-capacity-factor</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/analyse-wind-offshore-full-year</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/compare-wind-offshore-approaches</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/fit-wind-offshore-capacity-weights</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/analyse-wind-offshore-bias-drivers</loc>
+  </url>
+  <url>
     <loc>http://localhost:3000/notebooks/compare-solar-approaches</loc>
   </url>
   <url>
     <loc>http://localhost:3000/notebooks/analyse-solar-bias-drivers</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/verify-solar-technology-physics</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/analyse-solar-full-year</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/markdown/congestion-curtailment-data</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/analyse-congestion-curtailment</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/markdown/residual-load-walkthrough</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/markdown/curtailment-system-equations</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/estimate-gross-demand</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/estimate-curtailment</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/forecast-residual-load</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/illustrate-residual-load-model</loc>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notebooks/compare-model-flexibility</loc>
   </url>
 </urlset>

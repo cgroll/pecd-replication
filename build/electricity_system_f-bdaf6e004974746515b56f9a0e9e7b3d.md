@@ -213,8 +213,8 @@ $$
 - **`L_congestion,i(t)`** — grid-operator-enforced curtailment
   (Redispatch 2.0 / Einspeisemanagement). The one loss category with
   published official data — but only from October 2021, and even then
-  only monthly and national-only (see the
-  [congestion data chapter](congestion_curtailment_data.md) for what
+  only monthly and national-only (see
+  [notebook 44](../notebooks/44_analyse_congestion_curtailment.ipynb) for what
   that data does and doesn't cover).
 
 Looking at the gap between potential and observed generation directly is
@@ -346,8 +346,8 @@ share) — supportive, though both simply trend upward together over
 Real redispatch data (SMARD, monthly, from July 2022) shows offshore
 wind curtailed roughly **8-9x more heavily per MW installed** than
 onshore — a real technology-specific asymmetry the pooled onshore+offshore
-curve above currently discards (see the
-[congestion data chapter](congestion_curtailment_data.md) for the full
+curve above currently discards (see
+[notebook 44](../notebooks/44_analyse_congestion_curtailment.ipynb) for the full
 picture; that data validates an already-fitted curve after the fact, it
 can't supply `\hat L(t)` a live forecasting input, since tomorrow's
 curtailment is never observable at forecast time regardless of what data

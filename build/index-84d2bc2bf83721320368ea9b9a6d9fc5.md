@@ -434,25 +434,47 @@ and the year-over-year bias drift shared by *all three* approaches
 above) — none of these have an isolated ground-truth series to check
 against either.
 
-## Congestion & curtailment: what the redispatch data shows
+## Congestion & curtailment: what the data shows
 
 Before trusting any *estimated* curtailment model, it's worth looking at
-real ground truth. Since July 2022, SMARD publishes monthly, technology-
-labeled volumes of feed-in curtailed under Germany's Redispatch 2.0
-regime — real, if coarse (monthly, national-only, redispatch-only, no
-market-based curtailment). [A dedicated chapter](congestion_curtailment_data.md)
-walks through what this data is, where it comes from, and what it shows:
-wind dominates curtailment volume, offshore wind is curtailed roughly 8-9x
-more heavily *per MW installed* than onshore, and PV's smaller curtailment
-tracks its own generation season. This chapter is deliberately descriptive
-only — no tie-back yet to the residual-load model's own curtailment
-estimates below.
+real ground truth — from two sources with very different tradeoffs,
+described and then reconciled across three notebooks.
+
+[The first notebook](../notebooks/44_analyse_congestion_curtailment.ipynb)
+covers SMARD's monthly series: TSO+DSO combined, folds in countertrading
+and grid-reserve volume (not redispatch-only), and reflects a settled,
+ex-post counterfactual ("Ausfallarbeit") calculation rather than a live
+instructed-power reading — real, but coarse (monthly, national-only). Wind
+dominates curtailment volume, offshore wind is curtailed roughly 8-9x more
+heavily *per MW installed* than onshore, and PV's smaller curtailment
+tracks its own generation season.
+
+[The second notebook](../notebooks/45_explore_redispatch_measures.ipynb)
+covers a much richer, per-measure source netztransparenz.de also publishes
+(real timestamps, per-plant/cluster names) — TSO-issued, per-measure
+frequency, but only comprehensively technology-labeled for offshore wind;
+onshore wind and PV are almost never named individually.
+
+[The third notebook](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb)
+reconciles the two:
+the aggregate gap is concentrated in the countertrading/unknown category
+(only ~13% of SMARD's figure is captured), not spread evenly; offshore
+wind matches almost exactly (100%) at the technology level; and most of
+the per-measure file's unlabeled majority can be attributed statistically
+(a seasonal-fingerprint fit per grid-connection entity — geographically
+sensible, wind-dominated in the north and PV-dominated in Bavaria, without
+ever being told any geography) after a MaStR-based join attempt turned out
+to be a clean dead end. An important caveat carries through: this
+attribution's absolute levels still run about a third below SMARD's, so
+it's a better source for *shape* than for absolute levels.
 
 ### Roadmap: congestion data notebooks
 
 | Notebook | What it shows |
 |---|---|
-| [44: Curtailment by source and season](../notebooks/44_analyse_congestion_curtailment.ipynb) | Real redispatch curtailment volumes by energy source, 2022-2026: magnitude, trend, and seasonal pattern |
+| [44: SMARD's monthly series](../notebooks/44_analyse_congestion_curtailment.ipynb) | Attributes, verification against SMARD's own page, curtailment by source and season |
+| [45: The per-measure series](../notebooks/45_explore_redispatch_measures.ipynb) | Attributes, the naming-convention bug, time trend, seasonality, TSO-based spatial proxy |
+| [46: Comparing the two sources](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb) | Aggregate and per-technology reconciliation, the MaStR dead end, seasonal-fingerprint NNLS attribution |
 
 ## Residual load: demand and curtailment estimation
 

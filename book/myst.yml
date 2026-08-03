@@ -37,8 +37,9 @@ project:
         - file: notebooks/29_analyse_solar_full_year.ipynb
     - title: "Congestion & curtailment: what the data shows"
       children:
-        - file: markdown/congestion_curtailment_data.md
         - file: notebooks/44_analyse_congestion_curtailment.ipynb
+        - file: notebooks/45_explore_redispatch_measures.ipynb
+        - file: notebooks/46_attribute_ambiguous_redispatch_entities.ipynb
     - title: "Residual load: demand & curtailment estimation"
       children:
         - file: markdown/residual_load_walkthrough.md

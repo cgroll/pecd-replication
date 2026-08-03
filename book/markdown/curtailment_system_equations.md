@@ -240,23 +240,29 @@ Checked directly by building a download pipeline against it, not just
 assumed: SMARD publishes monthly redispatch-adjusted feed-in volumes by
 energy carrier (wind onshore, wind offshore, solar, and the conventional
 sources), covering July 2022 onward — see
-[the congestion data chapter](congestion_curtailment_data.md) for the full
+[notebook 44](../notebooks/44_analyse_congestion_curtailment.ipynb) for the full
 walkthrough and `pecdr/smard_redispatch.py`/`pipeline/43_download_redispatch_by_source.py`
 for how it's fetched. That's real ground truth for `L_congestion`
 specifically, per technology, but with real limits: (1) it starts July
 2022, so it can't cover this project's full 2019-2025 backtest; (2) it's
-**monthly and national-only** — no hour-of-day or grid-region detail, so
-it can't directly recalibrate an hourly oversupply-proxy curve the way a
-per-measure, per-plant series could; (3) it only captures **redispatch**
-(grid-operator-ordered curtailment) — it never captures `L_price`
-(voluntary, market-based curtailment from negative prices) or `L_repair`
-(not a redispatch measure at all).
+**monthly and national-only** — no hour-of-day or grid-region detail; (3)
+checked directly (not assumed), it is **not** a clean redispatch-only
+figure — it's TSO+DSO combined and folds in countertrading and grid-reserve
+volume alongside redispatch proper (see
+[notebook 46](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb)); it never
+captures `L_price` (voluntary, market-based curtailment from negative
+prices) or `L_repair` (not a redispatch measure at all).
 
-(An earlier version of this section described netztransparenz.de's
-per-measure Redispatch export, assumed to carry a clean per-technology
-breakdown from October 2021 — that assumption was never actually verified
-and turned out not to hold up on inspection; SMARD's own monthly series,
-above, is the source this project actually downloads and uses.)
+A second, per-measure source (netztransparenz.de's live Redispatch export)
+does give real timestamps and per-plant names, but turned out to carry a
+clean technology label only for offshore wind — onshore wind and PV are
+almost entirely hidden behind anonymous substation/cluster codes, so it
+doesn't supply the clean per-technology, per-hour recalibration input it
+initially looked like it would. See
+[notebook 45](../notebooks/45_explore_redispatch_measures.ipynb) and
+[notebook 46](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb) for what it
+actually offers (mainly: attributable *shape*, not yet reliable absolute
+levels) and how the two sources' totals were reconciled.
 
 Because tomorrow's curtailment is never observable at forecast time
 regardless, `L̂(t)` in equation 11 has to be an estimated function of

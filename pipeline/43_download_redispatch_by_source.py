@@ -2,7 +2,7 @@
 
 Pure data acquisition -- no charts. Ground truth for how much feed-in was
 curtailed (and increased, for context) under Redispatch 2.0, per energy
-carrier, since July 2022 -- see `book/markdown/congestion_curtailment_data.md`
+carrier, since July 2022 -- see `pipeline/44_analyse_congestion_curtailment.py`
 for the analysis this feeds.
 
 Unlike pipeline/13's incremental download, this always re-fetches the whole

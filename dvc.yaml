@@ -521,6 +521,7 @@ stages:
     deps:
       - pipeline/44_analyse_congestion_curtailment.py
       - pecdr/paths.py
+      - pecdr/smard_redispatch.py
       - data/downloads/smard/redispatch_by_source.parquet
     outs:
       - book/notebooks/44_analyse_congestion_curtailment.ipynb:
@@ -530,6 +531,78 @@ stages:
       - output/images/44_cumulative_curtailment_by_source.png:
           cache: false
       - output/images/44_seasonal_curtailment_pattern.png:
+          cache: false
+      - output/images/44_measure_type_over_time.png:
+          cache: false
+
+  download_redispatch_measures:
+    cmd: uv run python pipeline/47_download_redispatch_measures.py
+    deps:
+      - pipeline/47_download_redispatch_measures.py
+      - pecdr/redispatch_measures.py
+    outs:
+      - data/downloads/netztransparenz/redispatch_measures.csv:
+          persist: true
+
+  explore_redispatch_measures:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/45_explore_redispatch_measures.ipynb
+      pipeline/45_explore_redispatch_measures.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/45_explore_redispatch_measures.ipynb
+    deps:
+      - pipeline/45_explore_redispatch_measures.py
+      - pecdr/redispatch_measures.py
+      - pecdr/paths.py
+      - data/downloads/netztransparenz/redispatch_measures.csv
+    outs:
+      - book/notebooks/45_explore_redispatch_measures.ipynb:
+          cache: false
+      - output/images/45_monthly_by_classified_tech.png:
+          cache: false
+      - output/images/45_seasonal_by_classified_tech.png:
+          cache: false
+      - output/images/45_curtailment_by_tso.png:
+          cache: false
+
+  attribute_ambiguous_redispatch_entities:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/46_attribute_ambiguous_redispatch_entities.ipynb
+      pipeline/46_attribute_ambiguous_redispatch_entities.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/46_attribute_ambiguous_redispatch_entities.ipynb
+    deps:
+      - pipeline/46_attribute_ambiguous_redispatch_entities.py
+      - pecdr/redispatch_measures.py
+      - pecdr/paths.py
+      - data/downloads/netztransparenz/redispatch_measures.csv
+      - data/downloads/smard/redispatch_by_source.parquet
+      - data/processed/residual_load_inputs.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/46_attribute_ambiguous_redispatch_entities.ipynb:
+          cache: false
+      - output/images/46_offshore_wind_by_source.png:
+          cache: false
+      - output/images/46_reconstructed_vs_smard.png:
+          cache: false
+      - output/images/46_offshore_gap_vs_curtailment.png:
+          cache: false
+      - output/images/46_offshore_gap_vs_curtailment_daily.png:
+          cache: false
+      - output/images/46_offshore_potential_observed_curtailment.png:
+          cache: false
+      - output/images/46_offshore_potential_observed_curtailment_daily.png:
+          cache: false
+      - output/images/46_offshore_potential_observed_curtailment_daily_window.png:
+          cache: false
+      - output/images/46_offshore_scatter_potential_vs_reconstructed_daily.png:
+          cache: false
+      - output/images/46_offshore_scatter_potential_vs_observed_daily.png:
           cache: false
 
   build_residual_load_inputs:

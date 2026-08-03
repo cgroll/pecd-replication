@@ -140,6 +140,23 @@ class ProjPaths:
         """
         return self.smard_downloads_path / "redispatch_by_source.parquet"
 
+    @property
+    def netztransparenz_downloads_path(self) -> Path:
+        """netztransparenz.de downloads directory."""
+        return self.downloads_path / "netztransparenz"
+
+    @property
+    def redispatch_measures_file(self) -> Path:
+        """Per-measure Redispatch export (Format 5): one row per redispatch
+        measure, with start/end time, direction, MW/MWh, affected plant name,
+        and primary energy type. Downloaded by
+        pipeline/47_download_redispatch_measures.py -- see
+        pecdr/redispatch_measures.py for the postback mechanics and
+        pecdr/smard_redispatch.py for the monthly SMARD series this
+        complements.
+        """
+        return self.netztransparenz_downloads_path / "redispatch_measures.csv"
+
     # ------------------------------------------------------------------ #
     # Raw ERA5 downloads                                                   #
     # ------------------------------------------------------------------ #
@@ -532,6 +549,7 @@ class ProjPaths:
             self.era5_downloads_path,
             self.smard_downloads_path,
             self.pecd_capacity_factors_downloads_path,
+            self.netztransparenz_downloads_path,
         ]
         for d in dirs:
             d.mkdir(parents=True, exist_ok=True)

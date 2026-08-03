@@ -9,27 +9,22 @@
 # ---
 
 # %% [markdown]
-# # How much curtailment actually happens, and when?
+# # Data source: SMARD's monthly congestion-management series
 #
-# Before building any model of curtailment, it's worth just looking at real
-# ground truth: since July 2022, SMARD publishes how much feed-in was
-# reduced or increased under Germany's Redispatch 2.0 regime, broken down
-# by energy carrier. This notebook is purely descriptive -- no modeling, no
-# comparison to this project's own estimates (see `pecdr/smard_redispatch.py`
-# and `book/markdown/congestion_curtailment_data.md` for how the data is
-# fetched and what it can/can't tell us).
-#
-# Two important scope limits to keep in view throughout: this is **monthly,
-# national-only** data (no hour-of-day or regional detail), and it's
-# **redispatch specifically** -- grid-operator-ordered curtailment, not
-# market-based (negative-price) curtailment, which is a separate mechanism
-# this data doesn't capture at all.
+# Before analysing curtailment, it's worth being precise about what this
+# data actually measures -- its scope, its frequency, and how its numbers
+# are calculated. This notebook covers SMARD's monthly series; the
+# [next chapter](../notebooks/45_explore_redispatch_measures.ipynb) covers a
+# second, higher-frequency source, and
+# [the comparison chapter](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb)
+# reconciles the two.
 
 # %%
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from pecdr.paths import ProjPaths
+from pecdr.smard_redispatch import download_smard_chart_series
 
 paths = ProjPaths()
 paths.ensure_directories()
@@ -39,28 +34,69 @@ RENEWABLE_SOURCES = ["Wind_Onshore", "Wind_Offshore", "Photovoltaik"]
 colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
 # %% [markdown]
-# ## Reductions vs. increases: a quick sanity check on semantics
+# ## Attributes of this data source
 #
-# "Reduction" is curtailment-down (feed-in cut below what a plant could
-# have produced); "increase" is counter-trading up-regulation (a plant
-# asked to produce *more* to compensate elsewhere on the grid). If the data
-# means what it says, increases should be dominated by conventional/gas
-# plants, since curtailing renewables and then also asking them to ramp up
-# doesn't make physical sense -- renewables should appear almost
-# exclusively on the reduction side.
-
-# %%
-totals_by_direction = redispatch.groupby(["direction", "energy_source"])["gwh"].sum().unstack("direction").fillna(0.0)
-totals_by_direction["reduction_share_of_total"] = totals_by_direction["reduction"] / (
-    totals_by_direction["reduction"] + totals_by_direction["increase"]
-)
-totals_by_direction.sort_values("reduction", ascending=False)
+# | Attribute | Value |
+# |---|---|
+# | **Grid level** | TSO **and** DSO combined -- checked directly: SMARD separately publishes a TSO-vs-DSO split for renewables (`s-nepm_re_eb-1-1x`), and summing its two columns lands within 0.3% of this series' renewable total for the same period. Not TSO-only. |
+# | **Frequency** | Monthly |
+# | **Measure types included** | **Not redispatch-only.** Summing this series' reduction *and* increase columns across all technologies matches, almost to the GWh, the sum of SMARD's three separately-published measure-type totals (Countertrading + Grid reserve + Redispatch-with-market-power-plants) -- see the verification section below. Countertrading and grid-reserve volume are folded into this "by energy source" view, not excluded from it. |
+# | **Methodology** | **Ex-post, counterfactual.** The compensable quantity ("Ausfallarbeit") is defined as theoretical feed-in minus actual feed-in, computed after the measure using either a frozen pre-measure baseline or (for wind) actual wind speed plus the turbine's certified power curve -- see BDEW's [methodology guide](https://www.bdew.de/media/documents/Awh_2020-05_RD_2.0_LF_Ausfallarbeit.pdf). This is not a live instructed-power reading. |
+# | **Location data** | None. Purely a national total -- no TSO, region, or plant-level breakdown in this series. |
 
 # %% [markdown]
-# As expected: the three renewable sources sit at (or very near) 100%
-# reduction share, while conventional sources split much more evenly
-# between the two directions -- confirms the reduction/increase labeling
-# behaves the way the terminology suggests.
+# ## Verifying our understanding against SMARD's own page
+#
+# SMARD publishes a yearly breakdown by measure type
+# (`s-nepm_entw-1-1`) that isn't the series we use for the technology
+# charts below, but reproducing its numbers is a good independent check
+# that the CSV-parsing approach (`pecdr/smard_redispatch.py`) is sound. See
+# [SMARD: "Volume of measures stable in the year as a whole"](https://www.smard.de/page/en/topic-article/5892/220534/volume-of-measures-stable-in-the-year-as-a-whole)
+# for the interactive chart this reproduces.
+
+# %%
+measure_type_yearly = download_smard_chart_series(
+    "s-nepm_entw-1-1",
+    ["countertrading_gwh", "grid_reserve_gwh", "renewable_gwh", "feed_in_mgmt_gwh", "conventional_gwh", "other_gwh"],
+)
+measure_type_yearly.loc[measure_type_yearly["date"].dt.year == 2024]
+
+# %% [markdown]
+# This should read `5,739 / 1,787 / 9,389 / 0 / 13,403` GWh for 2024 --
+# matching the page's own tooltip exactly (checked at the time this was
+# written). That's real confirmation the data pipeline reads what it claims
+# to read.
+
+# %% [markdown]
+# ## What the data actually looks like
+
+# %%
+redispatch.head(10)
+
+# %% [markdown]
+# ## Relevant facts about this data
+#
+# **Countertrading has no meaningful technology attribution.** It's a
+# market transaction (buying/selling power to relieve a constraint), not an
+# instruction to a specific named plant, so it can't be attributed a
+# technology -- it should land in `Unbekannt`. Checked directly: monthly
+# Countertrading volume (`s-nepm_ct-1-1`) correlates with `Unbekannt`
+# (summed across both directions) at **0.95** over the whole series, though
+# `Unbekannt` runs 1.4-1.8x larger than Countertrading alone -- the rest is
+# plausibly grid-reserve or "not attributable" redispatch, which also lack
+# a specific plant to attribute.
+
+# %%
+countertrading = download_smard_chart_series("s-nepm_ct-1-1", ["countertrading_gwh"])
+unbekannt = redispatch.loc[redispatch["energy_source"] == "Unbekannt"].groupby("month")["gwh"].sum().rename("unbekannt_gwh")
+ct_vs_unbekannt = countertrading.set_index("date").join(unbekannt, how="inner")
+print(f"correlation(countertrading, unbekannt): {ct_vs_unbekannt['countertrading_gwh'].corr(ct_vs_unbekannt['unbekannt_gwh']):.2f}")
+
+# %% [markdown]
+# **Feed-in management is essentially zero in recent years** (see the 2024
+# row above) -- the older, EEG-based curtailment mechanism has been folded
+# into Redispatch 2.0's unified framework rather than continuing as a
+# separate category.
 
 # %% [markdown]
 # ## Curtailment (reduction) volume by technology over time
@@ -110,23 +146,11 @@ plt.show()
 # %% [markdown]
 # ```{figure} ../../output/images/44_cumulative_curtailment_by_source.png
 # :name: fig-44-cumulative-curtailment-by-source
-# Total curtailed energy per source over the full period covered by this data.
+# Total curtailed energy per source over the full period covered by this data -- `Unbekannt` (mostly countertrading) is the single largest bar.
 # ```
-#
-# Worth noting directly: wind offshore's cumulative curtailment (16,108 GWh)
-# is actually *larger* than wind onshore's (12,873 GWh), despite offshore's
-# installed fleet being only about a seventh the size of onshore's (~9.2 GW
-# vs. ~63.1 GW in 2025 -- see `pecdr.paths.ProjPaths.residual_load_inputs_file`'s
-# `Capacity_wind_off_mw`/`Capacity_wind_on_mw` columns). Per MW installed,
-# that's roughly **8-9x more curtailment for offshore than onshore** over
-# this period -- consistent with known transmission bottlenecks moving
-# northern offshore generation south to load centers.
 
 # %% [markdown]
 # ## When during the year does curtailment happen?
-#
-# The closest this monthly data can get to "when": averaging by calendar
-# month across the ~3.5 years covered, separately per renewable technology.
 
 # %%
 reduction_renewables = reduction.loc[reduction["energy_source"].isin(RENEWABLE_SOURCES)].copy()
@@ -148,25 +172,46 @@ plt.show()
 # %% [markdown]
 # ```{figure} ../../output/images/44_seasonal_curtailment_pattern.png
 # :name: fig-44-seasonal-curtailment-pattern
-# Average curtailment by calendar month -- wind (both onshore and offshore) peaks in the windier autumn/winter months; PV's curtailment tracks its own generation season, peaking in spring/summer.
+# Average curtailment by calendar month -- wind peaks in autumn/winter; PV's curtailment tracks its own generation season, peaking in spring/summer.
+# ```
+
+# %% [markdown]
+# ## Congestion management by type of measure, 2015-2026
+
+# %%
+fig, ax = plt.subplots(figsize=(12, 5))
+measure_cols = ["countertrading_gwh", "grid_reserve_gwh", "renewable_gwh", "feed_in_mgmt_gwh", "conventional_gwh"]
+measure_labels = ["Countertrading", "Redispatch (reserve plants)", "Redispatch (renewables)", "Feed-in management", "Redispatch (conventional)"]
+ax.stackplot(
+    measure_type_yearly["date"],
+    [measure_type_yearly[c] for c in measure_cols],
+    labels=measure_labels,
+    colors=[colors[i % len(colors)] for i in range(len(measure_cols))],
+    alpha=0.85,
+)
+ax.set_ylabel("GWh")
+ax.set_title("Congestion management volume by type of measure, 2015-2026")
+ax.legend(loc="upper left")
+fig.tight_layout()
+fig.savefig(paths.images_path / "44_measure_type_over_time.png", dpi=150, bbox_inches="tight")
+plt.show()
+
+# %% [markdown]
+# ```{figure} ../../output/images/44_measure_type_over_time.png
+# :name: fig-44-measure-type-over-time
+# Total congestion-management volume by measure type, 2015-2026 -- redispatch with renewables only became a distinct, large category from 2022 onward (Redispatch 2.0).
 # ```
 
 # %% [markdown]
 # ## Takeaways
 #
-# - **Wind dominates curtailment volume**, and offshore is curtailed far
-#   more heavily relative to its fleet size than onshore -- a real,
-#   measured asymmetry this project's model doesn't currently distinguish
-#   (the curtailment curve in notebooks 39/40/42 is calibrated on *pooled*
-#   onshore+offshore wind, then transferred to PV as well).
-# - **PV curtailment is real but smaller in absolute terms**, and clearly
-#   seasonal, peaking alongside PV's own generation season rather than at
-#   some independent time.
-# - **This is a lower bound on total curtailment**, not the whole picture:
-#   it only captures grid-operator-ordered redispatch, not market-based
-#   (negative-price) curtailment, which this data source doesn't report at
-#   all.
-# - The natural next question -- does this real data actually support the
-#   wind-to-PV curve-transfer assumption used in the residual-load model,
-#   or does it call for a PV-specific curve -- is deliberately left open
-#   here; this chapter's only job was building a feel for the data itself.
+# - This is a **TSO+DSO, monthly, ex-post counterfactual** figure that
+#   folds in countertrading and grid-reserve volume -- not a narrow,
+#   redispatch-only, TSO-only, real-time reading. Keep that in mind when
+#   comparing it against any other source (see the comparison chapter).
+# - Wind dominates curtailment volume; offshore is curtailed
+#   disproportionately to its fleet size; PV's smaller curtailment tracks
+#   its own generation season.
+# - `Unbekannt` -- mostly countertrading, which has no plant to attribute a
+#   technology to -- is the single largest category, bigger than any one
+#   generation technology.

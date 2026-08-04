@@ -43,7 +43,15 @@ generation stays well below it. Wind has no behind-the-meter
 self-consumption to blur the picture, so whatever gap remains is (almost)
 entirely curtailment plus a small amount of repair/model error — that's
 what makes wind the *clean calibration signal* used below, not a
-reassuring "these should match" chart.
+reassuring "these should match" chart. (Checked directly against real
+curtailment and price data in
+[notebook 48](../notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb): this
+"(almost) entirely loss" framing turns out to be too strong for offshore
+wind specifically — real redispatch curtailment explains only ~40% of the
+gap on average, and negative day-ahead prices, while a real and measurable
+contributor on top of that, are far from the dominant piece either. A
+sizeable share of the gap is more likely replication bias than an
+unmeasured real loss.)
 
 **PV's version of the same chart mixes in a second effect:**
 

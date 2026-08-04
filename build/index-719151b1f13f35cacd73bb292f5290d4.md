@@ -438,7 +438,7 @@ against either.
 
 Before trusting any *estimated* curtailment model, it's worth looking at
 real ground truth — from two sources with very different tradeoffs,
-described and then reconciled across three notebooks.
+described and then reconciled across four notebooks.
 
 [The first notebook](../notebooks/44_analyse_congestion_curtailment.ipynb)
 covers SMARD's monthly series: TSO+DSO combined, folds in countertrading
@@ -468,6 +468,22 @@ to be a clean dead end. An important caveat carries through: this
 attribution's absolute levels still run about a third below SMARD's, so
 it's a better source for *shape* than for absolute levels.
 
+[The fourth notebook](../notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb)
+uses offshore wind's now-trusted curtailment numbers to check a claim made
+earlier, in the residual-load walkthrough: that offshore wind's raw
+potential-observed gap is "(almost) entirely loss." Real curtailment
+explains only ~40% of that gap on average. For what's left, negative
+day-ahead prices — a second, price-driven form of voluntary curtailment
+that never shows up in either redispatch source — turn out to carry real
+signal: splitting days by whether they had a negative-price hour drops the
+curtailment-only model's fit from R² = 0.89 to R² = 0.60, and a simple
+regression of the curtailment-unexplained residual on negative-price
+exposure comes back with a positive slope (~0.43) but a modest R² (0.26).
+Negative prices are a real, measurable contributor — not the dominant one.
+What's left after both mechanisms points at bias in this project's own
+offshore "potential" replication as the more likely explanation for the
+remainder.
+
 ### Roadmap: congestion data notebooks
 
 | Notebook | What it shows |
@@ -475,6 +491,7 @@ it's a better source for *shape* than for absolute levels.
 | [44: SMARD's monthly series](../notebooks/44_analyse_congestion_curtailment.ipynb) | Attributes, verification against SMARD's own page, curtailment by source and season |
 | [45: The per-measure series](../notebooks/45_explore_redispatch_measures.ipynb) | Attributes, the naming-convention bug, time trend, seasonality, TSO-based spatial proxy |
 | [46: Comparing the two sources](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb) | Aggregate and per-technology reconciliation, the MaStR dead end, seasonal-fingerprint NNLS attribution |
+| [48: Offshore gap vs. curtailment](../notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb) | How much of offshore wind's raw potential-observed gap real curtailment and negative prices actually explain |
 
 ## Residual load: demand and curtailment estimation
 

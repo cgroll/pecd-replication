@@ -615,48 +615,52 @@ stages:
     deps:
     - path: pecdr/smard.py
       hash: md5
-      md5: 1217f22d67926837581380aaaa62ed79
-      size: 2798
+      md5: 1e7c2be2fa63f8bcc1e22394bb4de270
+      size: 2816
     - path: pipeline/13_download_smard.py
       hash: md5
-      md5: 3bca71d3ec73af1caddac8cd2598ef07
-      size: 2411
+      md5: d0495f3c26b80e66662de5fcd26fee82
+      size: 2538
     outs:
     - path: data/downloads/smard/load.parquet
       hash: md5
-      md5: 8d3fbefc66e3302e58fa372228826f64
-      size: 987308
+      md5: 7372219e801ca0815e20b33c032f28ef
+      size: 990400
+    - path: data/downloads/smard/price_de_lu.parquet
+      hash: md5
+      md5: 15ddab486a4e3ab8562d05257d5a5664
+      size: 790793
     - path: data/downloads/smard/pv.parquet
       hash: md5
-      md5: f7b79c007e4aa5447572bed02bc83d79
-      size: 971657
+      md5: 180b5f3cd39c882d850a4747ba8f3200
+      size: 974469
     - path: data/downloads/smard/wind_offshore.parquet
       hash: md5
-      md5: 8127113788b485feb89696bdda9e9a44
-      size: 846464
+      md5: bb8cd564f9eb32aa952c22ea8b79d402
+      size: 849485
     - path: data/downloads/smard/wind_onshore.parquet
       hash: md5
-      md5: 064ef844f331f084422dda300148bd59
-      size: 1121670
+      md5: 9dc28e17f566d1f469178447b9d61975
+      size: 1124770
   build_target_panel:
     cmd: uv run python pipeline/14_build_target_panel.py
     deps:
     - path: data/downloads/smard/load.parquet
       hash: md5
-      md5: 8d3fbefc66e3302e58fa372228826f64
-      size: 987308
+      md5: 7372219e801ca0815e20b33c032f28ef
+      size: 990400
     - path: data/downloads/smard/pv.parquet
       hash: md5
-      md5: f7b79c007e4aa5447572bed02bc83d79
-      size: 971657
+      md5: 180b5f3cd39c882d850a4747ba8f3200
+      size: 974469
     - path: data/downloads/smard/wind_offshore.parquet
       hash: md5
-      md5: 8127113788b485feb89696bdda9e9a44
-      size: 846464
+      md5: bb8cd564f9eb32aa952c22ea8b79d402
+      size: 849485
     - path: data/downloads/smard/wind_onshore.parquet
       hash: md5
-      md5: 064ef844f331f084422dda300148bd59
-      size: 1121670
+      md5: 9dc28e17f566d1f469178447b9d61975
+      size: 1124770
     - path: pipeline/14_build_target_panel.py
       hash: md5
       md5: 6baaef56077736ae12d9f62313aa773b
@@ -664,8 +668,8 @@ stages:
     outs:
     - path: data/processed/target_panel.parquet
       hash: md5
-      md5: 103b2a6e367e505737794c1e0fe10aa5
-      size: 1967734
+      md5: d5419a0707f90bd55a245a0bc84785b4
+      size: 1974865
   download_pecd_capacity_factors:
     cmd: uv run python pipeline/16_download_pecd_capacity_factors.py
     deps:
@@ -1699,8 +1703,8 @@ stages:
       size: 9255
     - path: data/processed/target_panel.parquet
       hash: md5
-      md5: 103b2a6e367e505737794c1e0fe10aa5
-      size: 1967734
+      md5: d5419a0707f90bd55a245a0bc84785b4
+      size: 1974865
     - path: data/processed/wind_offshore_full_year_cf.parquet
       hash: md5
       md5: 385ff4fcdf7e33a312b9bf7325067fd4
@@ -1939,12 +1943,12 @@ stages:
     deps:
     - path: pecdr/smard_redispatch.py
       hash: md5
-      md5: 3ae2b1993ce1cf2eb9bf60b8c16ff587
-      size: 4166
+      md5: 60be2654dbc6e03a1cf2aa6386359418
+      size: 5942
     - path: pipeline/43_download_redispatch_by_source.py
       hash: md5
-      md5: 44119f7ec084962dc19bf658a16cc83c
-      size: 1073
+      md5: 3081f9ae11c633b316ab49de2faa0c6d
+      size: 1074
     outs:
     - path: data/downloads/smard/redispatch_by_source.parquet
       hash: md5
@@ -1986,3 +1990,127 @@ stages:
       hash: md5
       md5: 25b50cd992c5a4fbbb5c810fb7d44520
       size: 109225
+  download_redispatch_measures:
+    cmd: uv run python pipeline/47_download_redispatch_measures.py
+    deps:
+    - path: pecdr/redispatch_measures.py
+      hash: md5
+      md5: 2922dba7bba2db2b888b1b74f41625ca
+      size: 7789
+    - path: pipeline/47_download_redispatch_measures.py
+      hash: md5
+      md5: ad9edca5aa74cc9485218b1ae83dbe0d
+      size: 851
+    outs:
+    - path: data/downloads/netztransparenz/redispatch_measures.csv
+      hash: md5
+      md5: 23008309dcdb5206b90dc87e58e6140c
+      size: 16130944
+  analyse_onshore_gap_vs_curtailment:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output 
+      book/notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb 
+      pipeline/49_analyse_onshore_gap_vs_curtailment.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb
+    deps:
+    - path: data/downloads/netztransparenz/redispatch_measures.csv
+      hash: md5
+      md5: 23008309dcdb5206b90dc87e58e6140c
+      size: 16130944
+    - path: data/downloads/smard/redispatch_by_source.parquet
+      hash: md5
+      md5: a95df651d8f37029037bddac4a27307b
+      size: 8935
+    - path: data/processed/residual_load_inputs.parquet
+      hash: md5
+      md5: 3c9eebfd7117d8305f563d78c0443cd5
+      size: 4872325
+    - path: data/processed/target_panel.parquet
+      hash: md5
+      md5: d5419a0707f90bd55a245a0bc84785b4
+      size: 1974865
+    - path: pecdr/paths.py
+      hash: md5
+      md5: ae2db1fee7df7c7107438970c1739da5
+      size: 25873
+    - path: pecdr/redispatch_measures.py
+      hash: md5
+      md5: 2922dba7bba2db2b888b1b74f41625ca
+      size: 7789
+    - path: pipeline/49_analyse_onshore_gap_vs_curtailment.py
+      hash: md5
+      md5: 43af273e7332818b29d382196feff678
+      size: 16482
+    outs:
+    - path: book/notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb
+      hash: md5
+      md5: 4f05b87abd8ba90f4f1c12c205d84607
+      size: 27501
+    - path: output/images/49_onshore_potential_observed_curtailment_daily.png
+      hash: md5
+      md5: 84b93f4daa7d53134ebd12aeff28efcc
+      size: 438248
+    - path: 
+        output/images/49_onshore_potential_observed_curtailment_daily_window.png
+      hash: md5
+      md5: c74abfa08a6a8cf453e4499f87193e9e
+      size: 216931
+    - path: output/images/49_onshore_recalibration_factor.png
+      hash: md5
+      md5: 573d181d056668230f19461cbe4d483a
+      size: 68682
+    - path: 
+        output/images/49_onshore_scatter_potential_vs_reconstructed_daily.png
+      hash: md5
+      md5: ff2f45d1c59c80fb343c9b2c793a4d87
+      size: 100022
+  attribute_ambiguous_redispatch_entities:
+    cmd: MPLBACKEND=Agg uv run jupytext --to notebook --execute --set-kernel 
+      python3 --output 
+      book/notebooks/46_attribute_ambiguous_redispatch_entities.ipynb 
+      pipeline/46_attribute_ambiguous_redispatch_entities.py && uv run python 
+      pipeline/_strip_jupytext_metadata.py 
+      book/notebooks/46_attribute_ambiguous_redispatch_entities.ipynb
+    deps:
+    - path: data/downloads/netztransparenz/redispatch_measures.csv
+      hash: md5
+      md5: 23008309dcdb5206b90dc87e58e6140c
+      size: 16130944
+    - path: data/downloads/smard/redispatch_by_source.parquet
+      hash: md5
+      md5: a95df651d8f37029037bddac4a27307b
+      size: 8935
+    - path: pecdr/paths.py
+      hash: md5
+      md5: ae2db1fee7df7c7107438970c1739da5
+      size: 25873
+    - path: pecdr/redispatch_measures.py
+      hash: md5
+      md5: 2922dba7bba2db2b888b1b74f41625ca
+      size: 7789
+    - path: pipeline/46_attribute_ambiguous_redispatch_entities.py
+      hash: md5
+      md5: 89e3b48393dee675b9df85ca781e611a
+      size: 18281
+    outs:
+    - path: book/notebooks/46_attribute_ambiguous_redispatch_entities.ipynb
+      hash: md5
+      md5: 3fab88ff8ddcaa8e8c01615489d73eb0
+      size: 39194
+    - path: output/images/46_offshore_wind_by_source.png
+      hash: md5
+      md5: a635f80341412ae5e665a179bc161d92
+      size: 113653
+    - path: output/images/46_onshore_pv_combined_by_source.png
+      hash: md5
+      md5: 678859cb39ecd9dcec4d0d6756fdd71e
+      size: 132891
+    - path: output/images/46_onshore_pv_combined_ratio.png
+      hash: md5
+      md5: 8f26a24fb98d75eea6880f59568be9e8
+      size: 63494
+    - path: output/images/46_reconstructed_vs_smard.png
+      hash: md5
+      md5: 89aaab3e913dbe1bdd3102b0f51aa3be
+      size: 199549

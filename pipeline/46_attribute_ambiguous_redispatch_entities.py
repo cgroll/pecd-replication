@@ -146,6 +146,60 @@ plt.show()
 # ```
 
 # %% [markdown]
+# ## Onshore + PV combined: no attribution needed yet, but a real and unstable gap
+#
+# Before splitting the ambiguous entities between onshore wind and PV --
+# which needs the statistical attribution further down -- there's a
+# cleaner comparison available first: **onshore wind and PV summed
+# together** (i.e. everything in `Erneuerbar` that isn't offshore) against
+# SMARD's own `Wind_Onshore + Photovoltaik` total. This needs no
+# attribution guessing at all -- it's just "renewable minus the one
+# technology that's already fully resolved above" -- so any gap here is a
+# pure volume/coverage problem, not an artifact of splitting wind from PV.
+
+# %%
+onshore_pv_by_month = renewable_reduction.loc[renewable_reduction["tech"] != "offshore_wind"].groupby("month")["mwh"].sum()
+smard_onshore_pv_by_month = smard_overlap.loc[smard_overlap["energy_source"].isin(["Wind_Onshore", "Photovoltaik"])].groupby("month")["gwh"].sum() * 1000
+
+fig, ax = plt.subplots(figsize=(12, 4))
+ax.plot(onshore_pv_by_month.index, onshore_pv_by_month.values, label="This file (onshore wind + PV, unattributed)", linewidth=1.3)
+ax.plot(smard_onshore_pv_by_month.index, smard_onshore_pv_by_month.values, label="SMARD reported (Wind_Onshore + Photovoltaik)", linewidth=1.3, linestyle="--")
+ax.set_ylabel("MWh")
+ax.set_title("Onshore wind + PV combined reduction volume: this file vs. SMARD")
+ax.legend()
+fig.tight_layout()
+fig.savefig(paths.images_path / "46_onshore_pv_combined_by_source.png", dpi=150, bbox_inches="tight")
+plt.show()
+
+# %% [markdown]
+# ```{figure} ../../output/images/46_onshore_pv_combined_by_source.png
+# :name: fig-46-onshore-pv-combined-by-source
+# Monthly onshore-wind-plus-PV reduction volume (combined, before any wind/PV split) -- this file vs. SMARD's own reported total. Unlike offshore's near-perfect overlap above, this file sits visibly below SMARD across almost the entire period (38.7% of SMARD's total, summed over the whole overlap) -- a real coverage gap that exists before any attribution step ever touches the data.
+# ```
+#
+# A real, visible gap -- and the ratio between the two lines isn't even
+# stable, which matters for anyone tempted to paper over it with a single
+# correction factor.
+
+# %%
+combined_ratio_by_month = (smard_onshore_pv_by_month / onshore_pv_by_month).reindex(onshore_pv_by_month.index)
+
+fig, ax = plt.subplots(figsize=(12, 4))
+ax.plot(combined_ratio_by_month.index, combined_ratio_by_month.values, marker="o", markersize=3, linewidth=1)
+ax.axhline(1, color="k", linewidth=0.8, linestyle="--")
+ax.set_ylabel("SMARD / this file (combined onshore + PV)")
+ax.set_title("Onshore wind + PV combined: monthly under-coverage ratio")
+fig.tight_layout()
+fig.savefig(paths.images_path / "46_onshore_pv_combined_ratio.png", dpi=150, bbox_inches="tight")
+plt.show()
+
+# %% [markdown]
+# ```{figure} ../../output/images/46_onshore_pv_combined_ratio.png
+# :name: fig-46-onshore-pv-combined-ratio
+# SMARD's reported combined onshore+PV total divided by this file's own (unattributed) combined total, by month. If the gap above were a constant scale error, this line would be flat; instead it swings from ~1.2 up past 100x in the same period (mid-2022, when Redispatch 2.0's renewable-specific reporting was brand new), then settles into a much calmer ~1.5-8x range from late 2023 onward. Not a fixed measurement bias -- a reporting-maturity effect that keeps changing the correction anyone would need to apply.
+# ```
+
+# %% [markdown]
 # ## Geo-information: both sources are limited, in different ways
 #
 # **SMARD's monthly series has none at all** -- purely a national total.

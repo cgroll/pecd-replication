@@ -588,6 +588,10 @@ stages:
           cache: false
       - output/images/46_offshore_wind_by_source.png:
           cache: false
+      - output/images/46_onshore_pv_combined_by_source.png:
+          cache: false
+      - output/images/46_onshore_pv_combined_ratio.png:
+          cache: false
       - output/images/46_reconstructed_vs_smard.png:
           cache: false
 
@@ -629,6 +633,34 @@ stages:
       - output/images/48_residual_vs_negative_price_exposure.png:
           cache: false
       - output/images/48_joint_model_daily_window.png:
+          cache: false
+
+  analyse_onshore_gap_vs_curtailment:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb
+      pipeline/49_analyse_onshore_gap_vs_curtailment.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb
+    deps:
+      - pipeline/49_analyse_onshore_gap_vs_curtailment.py
+      - pecdr/redispatch_measures.py
+      - pecdr/paths.py
+      - data/downloads/netztransparenz/redispatch_measures.csv
+      - data/downloads/smard/redispatch_by_source.parquet
+      - data/processed/residual_load_inputs.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb:
+          cache: false
+      - output/images/49_onshore_recalibration_factor.png:
+          cache: false
+      - output/images/49_onshore_potential_observed_curtailment_daily.png:
+          cache: false
+      - output/images/49_onshore_potential_observed_curtailment_daily_window.png:
+          cache: false
+      - output/images/49_onshore_scatter_potential_vs_reconstructed_daily.png:
           cache: false
 
   build_residual_load_inputs:

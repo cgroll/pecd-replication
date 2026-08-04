@@ -118,7 +118,7 @@ class ProjPaths:
     def smard_raw_file(self, name: str) -> Path:
         """Raw hourly SMARD series parquet.
 
-        `name` is one of: pv, wind_onshore, wind_offshore, load.
+        `name` is one of: pv, wind_onshore, wind_offshore, load, price_de_lu.
         """
         return self.smard_downloads_path / f"{name}.parquet"
 

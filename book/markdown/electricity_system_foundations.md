@@ -225,6 +225,13 @@ the first evidence this isn't just bookkeeping:
 Wind offshore, Nov-Dec 2023: potential vs. observed (SMARD). No behind-the-meter term to blur the picture, so this gap is (almost) entirely loss.
 ```
 
+Checked directly against real curtailment and price data in
+[notebook 48](../notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb):
+`L_congestion` explains only ~40% of this gap on average, and `L_price` is
+a real but modest contributor on top of that — not nearly all of it
+either. The rest is more likely bias in this project's own "potential"
+replication (the `ε_i(t)` term above) than an uncaptured real loss.
+
 ```{figure} ../../output/images/41_pv_potential_vs_observed.png
 :name: fig-found-pv-gap
 Solar PV, Jun-Jul 2023: potential vs. observed (SMARD). A gap at *every* peak, not just high-oversupply days — consistent with self-consumption (constant) layered on top of curtailment (episodic).

@@ -13,6 +13,8 @@ stages:
           persist: true
       - data/downloads/smard/load.parquet:
           persist: true
+      - data/downloads/smard/price_de_lu.parquet:
+          persist: true
 
   download_redispatch_by_source:
     cmd: uv run python pipeline/43_download_redispatch_by_source.py
@@ -581,8 +583,6 @@ stages:
       - pecdr/paths.py
       - data/downloads/netztransparenz/redispatch_measures.csv
       - data/downloads/smard/redispatch_by_source.parquet
-      - data/processed/residual_load_inputs.parquet
-      - data/processed/target_panel.parquet
     outs:
       - book/notebooks/46_attribute_ambiguous_redispatch_entities.ipynb:
           cache: false
@@ -590,19 +590,45 @@ stages:
           cache: false
       - output/images/46_reconstructed_vs_smard.png:
           cache: false
-      - output/images/46_offshore_gap_vs_curtailment.png:
+
+  analyse_offshore_gap_vs_curtailment:
+    cmd: >-
+      MPLBACKEND=Agg uv run jupytext --to notebook --execute
+      --set-kernel python3
+      --output book/notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb
+      pipeline/48_analyse_offshore_gap_vs_curtailment.py &&
+      uv run python pipeline/_strip_jupytext_metadata.py
+      book/notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb
+    deps:
+      - pipeline/48_analyse_offshore_gap_vs_curtailment.py
+      - pecdr/redispatch_measures.py
+      - pecdr/paths.py
+      - data/downloads/netztransparenz/redispatch_measures.csv
+      - data/downloads/smard/price_de_lu.parquet
+      - data/processed/residual_load_inputs.parquet
+      - data/processed/target_panel.parquet
+    outs:
+      - book/notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb:
           cache: false
-      - output/images/46_offshore_gap_vs_curtailment_daily.png:
+      - output/images/48_offshore_gap_vs_curtailment.png:
           cache: false
-      - output/images/46_offshore_potential_observed_curtailment.png:
+      - output/images/48_offshore_gap_vs_curtailment_daily.png:
           cache: false
-      - output/images/46_offshore_potential_observed_curtailment_daily.png:
+      - output/images/48_offshore_potential_observed_curtailment.png:
           cache: false
-      - output/images/46_offshore_potential_observed_curtailment_daily_window.png:
+      - output/images/48_offshore_potential_observed_curtailment_daily.png:
           cache: false
-      - output/images/46_offshore_scatter_potential_vs_reconstructed_daily.png:
+      - output/images/48_offshore_potential_observed_curtailment_daily_window.png:
           cache: false
-      - output/images/46_offshore_scatter_potential_vs_observed_daily.png:
+      - output/images/48_offshore_scatter_potential_vs_reconstructed_daily.png:
+          cache: false
+      - output/images/48_offshore_scatter_potential_vs_observed_daily.png:
+          cache: false
+      - output/images/48_reconstructed_vs_potential_by_price_group.png:
+          cache: false
+      - output/images/48_residual_vs_negative_price_exposure.png:
+          cache: false
+      - output/images/48_joint_model_daily_window.png:
           cache: false
 
   build_residual_load_inputs:

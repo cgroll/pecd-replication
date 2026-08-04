@@ -1,6 +1,7 @@
-"""Download hourly SMARD generation and load series for the DE-LU market area.
+"""Download hourly SMARD generation, load, and price series for the DE-LU
+market area.
 
-Pure data acquisition -- no charts. Downloads four series at hourly
+Pure data acquisition -- no charts. Downloads five series at hourly
 resolution for the DE-LU market area (see
 ~/research/delu-headline-forecast/docs/data_sources.md for the full
 background on the endpoint and region-code caveats):
@@ -9,6 +10,7 @@ background on the endpoint and region-code caveats):
   - wind_onshore  SMARD "Wind Onshore"
   - wind_offshore SMARD "Wind Offshore"
   - load          SMARD "Gesamt (Netzlast)" (Variable.TOTAL_LOAD)
+  - price_de_lu   SMARD day-ahead auction price, DE/LU (Variable.PRICE_DE_LU)
 
 Each series is saved to its own parquet file in data/downloads/smard/.
 Incremental: if a file already exists, only fetches data newer than its last
@@ -35,6 +37,7 @@ SERIES = {
     "wind_onshore": Variable.WIND_ONSHORE,
     "wind_offshore": Variable.WIND_OFFSHORE,
     "load": Variable.TOTAL_LOAD,
+    "price_de_lu": Variable.PRICE_DE_LU,
 }
 
 

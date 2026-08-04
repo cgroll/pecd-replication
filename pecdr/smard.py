@@ -22,12 +22,13 @@ DEFAULT_START_DATE = datetime(2015, 1, 1)
 
 
 class Variable(IntEnum):
-    """SMARD variable IDs for the four headline series."""
+    """SMARD variable IDs for the headline series."""
 
     SOLAR = 4068
     WIND_ONSHORE = 4067
     WIND_OFFSHORE = 1225
     TOTAL_LOAD = 410
+    PRICE_DE_LU = 4169
 
 
 def download_series(

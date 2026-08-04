@@ -251,7 +251,11 @@ figure — it's TSO+DSO combined and folds in countertrading and grid-reserve
 volume alongside redispatch proper (see
 [notebook 46](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb)); it never
 captures `L_price` (voluntary, market-based curtailment from negative
-prices) or `L_repair` (not a redispatch measure at all).
+prices) or `L_repair` (not a redispatch measure at all). See
+[notebook 48](../notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb) for a direct
+check of how much of offshore wind's raw potential-observed gap negative
+prices explain once real redispatch curtailment is already accounted for
+— not much, on top of curtailment's own share.
 
 A second, per-measure source (netztransparenz.de's live Redispatch export)
 does give real timestamps and per-plant names, but turned out to carry a

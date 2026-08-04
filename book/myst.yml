@@ -40,6 +40,7 @@ project:
         - file: notebooks/44_analyse_congestion_curtailment.ipynb
         - file: notebooks/45_explore_redispatch_measures.ipynb
         - file: notebooks/46_attribute_ambiguous_redispatch_entities.ipynb
+        - file: notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb
     - title: "Residual load: demand & curtailment estimation"
       children:
         - file: markdown/residual_load_walkthrough.md

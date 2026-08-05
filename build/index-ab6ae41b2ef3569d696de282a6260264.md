@@ -468,6 +468,17 @@ to be a clean dead end. An important caveat carries through: this
 attribution's absolute levels still run about a third below SMARD's, so
 it's a better source for *shape* than for absolute levels.
 
+That shortfall can be seen directly, before any wind/PV attribution ever
+runs: summing onshore wind and PV together (everything in `Erneuerbar`
+that isn't offshore) against SMARD's own combined `Wind_Onshore +
+Photovoltaik` total needs no attribution guessing at all, and still only
+captures 38.7% of SMARD's figure over the full period — confirming the
+under-coverage is a real volume problem, not an artifact of splitting wind
+from PV. The monthly ratio between the two is also far from a stable
+scale factor: over 100x in mid-2022, settling to a calmer ~1.5-8x only
+from late 2023 onward, tracking Redispatch 2.0's renewable reporting as it
+matured rather than a fixed measurement bias.
+
 [The fourth notebook](../notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb)
 uses offshore wind's now-trusted curtailment numbers to check a claim made
 earlier, in the residual-load walkthrough: that offshore wind's raw
@@ -484,6 +495,25 @@ What's left after both mechanisms points at bias in this project's own
 offshore "potential" replication as the more likely explanation for the
 remainder.
 
+[The fifth notebook](../notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb)
+asks the analogous question for onshore wind, whose reconstruction (unlike
+offshore's) sits well below SMARD's reported total — only 45.1%, once
+offshore's perfect match is excluded from chapter three's blended 67.5%
+renewables figure. Rather than accept that shortfall, it tests whether a
+pure monthly level correction (rescaling the reconstruction so its monthly
+total matches SMARD's exactly) closes the potential-observed gap as well as
+offshore's real curtailment did. It doesn't: R² against `y = x` only rises
+from ~0.65 to ~0.75 (offshore went from 0.21 to 0.90), even though the
+monthly *level* now matches SMARD by construction. The recalibration
+factor itself is revealing — implausibly large (up to ~80x) in 2022,
+settling to a plausible ~1.2-6x only from late 2023 onward — meaning the
+early shortfall isn't a stable scale problem so much as a sign that
+Redispatch 2.0's renewable reporting was still ramping up. The conclusion:
+onshore's problem isn't just missing volume, it's that the *timing* of
+what's currently captured is itself an imperfect proxy — pointing back at
+the entity-level attribution problem (chapter 46) rather than a simple
+correction factor.
+
 ### Roadmap: congestion data notebooks
 
 | Notebook | What it shows |
@@ -492,6 +522,7 @@ remainder.
 | [45: The per-measure series](../notebooks/45_explore_redispatch_measures.ipynb) | Attributes, the naming-convention bug, time trend, seasonality, TSO-based spatial proxy |
 | [46: Comparing the two sources](../notebooks/46_attribute_ambiguous_redispatch_entities.ipynb) | Aggregate and per-technology reconciliation, the MaStR dead end, seasonal-fingerprint NNLS attribution |
 | [48: Offshore gap vs. curtailment](../notebooks/48_analyse_offshore_gap_vs_curtailment.ipynb) | How much of offshore wind's raw potential-observed gap real curtailment and negative prices actually explain |
+| [49: Onshore gap vs. curtailment](../notebooks/49_analyse_onshore_gap_vs_curtailment.ipynb) | Whether a pure monthly level correction to the onshore reconstruction closes the gap as well as offshore's real curtailment did — it doesn't |
 
 ## Residual load: demand and curtailment estimation
 

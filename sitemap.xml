@@ -68,6 +68,9 @@
     <loc>http://localhost:3000/notebooks/analyse-offshore-gap-vs-curtailment</loc>
   </url>
   <url>
+    <loc>http://localhost:3000/notebooks/analyse-onshore-gap-vs-curtailment</loc>
+  </url>
+  <url>
     <loc>http://localhost:3000/markdown/residual-load-walkthrough</loc>
   </url>
   <url>
